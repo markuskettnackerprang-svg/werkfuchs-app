@@ -1,30 +1,36 @@
 {
   "expo": {
-    "name": "werkstattorganaizer",
-    "slug": "snack-aa8f40de-2569-4171-8111-1121e0b026d9",
+    "name": "WerkFuchs",
+    "slug": "werkfuchs-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+
     "ios": {
       "supportsTablet": true
     },
+
     "android": {
+      "package": "com.werkfuchs.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
     },
+
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "description": "Für Hobbyhandwerker für den besseren Überblick - Sachen nur noch zweimal kaufen, wenn es gewünscht ist."
+
+    "description": "Werkstatt- und Inventarorganisation. Der schlaue Fuchs behält den Überblick."
   }
 }
