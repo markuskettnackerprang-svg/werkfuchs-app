@@ -31,11 +31,11 @@
       "favicon": "./assets/favicon.png"
     },
 
-    "description": "Werkstatt- und Inventarorganisation. Der schlaue Fuchs behält den Überblick."
-    
+    "description": "Werkstatt- und Inventarorganisation. Der schlaue Fuchs behält den Überblick.",
+
     "extra": {
       "eas": {
-        "projectId": "HIER_DEINE_ID_EINFÜGEN"
+        "projectId": "caf1f101-a172-42f5-9229-e1cabc6eec06"
       }
     }
   }
