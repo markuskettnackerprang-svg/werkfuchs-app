@@ -1,0 +1,40 @@
+export const LABEL_LAYOUTS = {
+  large_12: {
+    key: "large_12",
+    name: "Groß – 12 Etiketten",
+    columns: 3,
+    gap: 10,
+    labelMinHeight: 180,
+    qrSize: 110,
+    showCategory: true,
+    showLocation: true,
+    showName: true,
+    showCode: true,
+  },
+
+  medium_21: {
+    key: "medium_21",
+    name: "Mittel – 21 Etiketten",
+    columns: 3,
+    gap: 10,
+    labelMinHeight: 140,
+    qrSize: 90,
+    showCategory: true,
+    showLocation: false,
+    showName: true,
+    showCode: true,
+  },
+
+  small_28: {
+    key: "small_28",
+    name: "Klein – 28 Etiketten",
+    columns: 4,
+    gap: 8,
+    labelMinHeight: 110,
+    qrSize: 65,
+    showCategory: false,
+    showLocation: false,
+    showName: true,
+    showCode: true,
+  },
+};
