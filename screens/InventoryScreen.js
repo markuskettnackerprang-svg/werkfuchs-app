@@ -1047,7 +1047,6 @@ const renderHeader = () => (
   </TouchableOpacity>
 )}
 
-    )}
         <View style={styles.previewButtons}>
           <TouchableOpacity
             style={styles.previewCancel}
