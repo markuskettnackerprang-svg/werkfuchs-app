@@ -19,7 +19,7 @@
     },
 
     "android": {
-      "package": "com.MKP.werkfuchs.",
+      "package": "com.mkp1981.werkfuchs",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
