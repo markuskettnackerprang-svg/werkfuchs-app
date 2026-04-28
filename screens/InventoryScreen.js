@@ -20,6 +20,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import ItemQrCode from "../components/ItemQrCode";
 import inventoryData from "../data/inventoryData";
 import { theme } from "../utils/theme";
+import { supabase } from "../services/supabaseClient";
+
+const WORKSHOP_ID = "werkfuchs-privat";
 
 function getCategoryColor(category) {
 
@@ -377,16 +380,20 @@ function findSimilarNameCandidates(items, savedItem) {
 useEffect(() => {
   async function loadItems() {
     try {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY);
+      const { data, error } = await supabase
+        .from("items")
+        .select("*")
+        .eq("workshop_id", WORKSHOP_ID)
+        .order("created_at", { ascending: false });
 
-      if (stored) {
-        setItems(JSON.parse(stored));
-      } else {
-        setItems(inventoryData);
+      if (error) {
+        console.log("Supabase Fehler:", error);
+        return;
       }
+
+      setItems(data || []);
     } catch (e) {
       console.log("Laden fehlgeschlagen:", e);
-      setItems(inventoryData);
     } finally {
       setHasLoadedItems(true);
     }
