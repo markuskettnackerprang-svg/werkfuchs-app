@@ -599,7 +599,10 @@ async function handleAnalyzePreviewImage() {
 
   if (error) {
     console.log("Speichern in Supabase fehlgeschlagen:", error);
-    Alert.alert("Fehler", "Der Artikel konnte nicht gespeichert werden.");
+    Alert.alert(
+      "Supabase-Fehler",
+      error?.message || JSON.stringify(error)
+);
     return;
   }
 
