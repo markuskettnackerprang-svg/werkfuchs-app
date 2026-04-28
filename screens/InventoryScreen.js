@@ -331,15 +331,7 @@ export default function InventoryScreen({
 
     const [showEditForm, setShowEditForm] = useState(startMode === "create");
     const isCreateMode = startMode === "create" || showEditForm;
-    
-  return items.filter((item) => {
-    if (item.id === savedItem.id) return false;
-    if (item.category !== category) return false;
-    if (hasCategoryPrefix(item.name, category)) return false;
 
-    return looksLikeSizeOnlyName(item.name);
-  });
-}
   const [searchText, setSearchText] = useState("");
   const [items, setItems] = useState([]);
   const [hasLoadedItems, setHasLoadedItems] = useState(false);
@@ -1188,7 +1180,6 @@ const renderHeader = () => (
 
   </>
 );
-
 return (
   <KeyboardAvoidingView
     style={styles.container}
@@ -1208,6 +1199,7 @@ return (
   </KeyboardAvoidingView>
 );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
