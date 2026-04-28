@@ -1068,7 +1068,6 @@ const renderHeader = () => (
   </TouchableOpacity>
 )}
 
-    )}
         <View style={styles.previewButtons}>
           <TouchableOpacity
             style={styles.previewCancel}
@@ -1209,17 +1208,6 @@ const renderHeader = () => (
 )}
   </>
 );
-
-{!isCreateMode && (
-  <TouchableOpacity
-    style={styles.resetButton}
-    onPress={handleResetAll}
-  >
-    <Text style={styles.resetButtonText}>
-      🧨 Alles zurücksetzen (Test)
-    </Text>
-  </TouchableOpacity>
-)}
 
 return (
   <KeyboardAvoidingView
