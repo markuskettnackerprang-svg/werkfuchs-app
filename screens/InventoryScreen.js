@@ -1,71 +1,21 @@
-import React, { useEffect, useRef, useState } from "react";
-import { suggestCategoryFromImage } from "../services/aiCategory";
+import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
+  Alert,
   FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
-  Alert,
-  Image,
-  Platform,
-  KeyboardAvoidingView,
-  TouchableWithoutFeedback,
-  Keyboard,
+  View,
 } from "react-native";
 
-import * as ImagePicker from "expo-image-picker";
-import ItemQrCode from "../components/ItemQrCode";
-import { theme } from "../utils/theme";
 import { supabase } from "../services/supabaseClient";
 
 const WORKSHOP_ID = "werkfuchs-privat";
 
-function getCategoryColor(category) {
-
-  const map = {
-
-    Schrauben: "#D97706",
-    Dübel: "#2563EB",
-    Elektrik: "#DC2626",
-    Werkzeug: "#374151",
-    Maschine: "#059669",
-    Nägel: "#92400E",
-    Beschläge: "#6B7280",
-    Sortimentskasten: "#7C3AED",
-    Unterlegscheiben: "#047857",
-    Holzdübel: "#B45309",
-    "Große Box": "#4B5563",
-
-  };
-
-  return map[category] || "#9CA3AF";
-
-}
-
-
-function getCategoryIcon(category) {
-
-  const map = {
-
-    Schrauben: "🔩",
-    Dübel: "🧱",
-    Elektrik: "⚡",
-    Werkzeug: "🧰",
-    Maschine: "⚙️",
-    Nägel: "📌",
-    Beschläge: "⚙️",
-    Sortimentskasten: "🗂️",
-    Unterlegscheiben: "⭕",
-    Holzdübel: "🪵",
-    "Große Box": "📦",
-
-  };
-
-  return map[category] || "📁";
-
-}
 const CATEGORY_PREFIXES = {
   Dübel: "D",
   Schrauben: "S",
@@ -95,31 +45,9 @@ const CATEGORY_SUGGESTIONS = [
   "Große Box",
   "Sortimentskasten",
 ];
-const FAVORITE_CATEGORIES = [
-  "Schrauben",
-  "Dübel",
-  "Bohrer",
-  "Werkzeug",
-  "Maschine",
-];
-const CATEGORY_COLORS = {
-  Schrauben: "#D97706",
-  Dübel: "#2563EB",
-  Bohrer: "#7C3AED",
-  Werkzeug: "#1F2A37",
-  Maschine: "#059669",
-  Elektrik: "#DC2626",
-  Unterlegscheiben: "#0F766E",
-  Nägel: "#92400E",
-  Holzdübel: "#A16207",
-  Beschläge: "#6B7280",
-  "Große Box": "#374151",
-  Sortimentskasten: "#9333EA",
-};
 
 function getCategoryPrefix(category) {
-  const clean = (category || "").trim();
-  return CATEGORY_PREFIXES[clean] || "X";
+  return CATEGORY_PREFIXES[(category || "").trim()] || "X";
 }
 
 function getNextCode(items, category) {
@@ -127,238 +55,61 @@ function getNextCode(items, category) {
 
   const numbers = items
     .filter((item) => (item.code || "").startsWith(prefix + "-"))
-    .map((item) => {
-      const parts = (item.code || "").split("-");
-      return parseInt(parts[1], 10);
-    })
+    .map((item) => parseInt((item.code || "").split("-")[1], 10))
     .filter((n) => !isNaN(n));
 
   const nextNumber = numbers.length > 0 ? Math.max(...numbers) + 1 : 1;
-
   return `${prefix}-${String(nextNumber).padStart(2, "0")}`;
 }
-function suggestCategoryFromText({ name = "", shortLabel = "", location = "" }) {
-  const text = `${name} ${shortLabel} ${location}`.toLowerCase();
 
-  const keywordMap = [
-    {
-      category: "Elektrik",
-      keywords: [
-        "wago",
-        "kabel",
-        "leitung",
-        "steckdose",
-        "schalter",
-        "strom",
-        "elektrik",
-        "sicherung",
-        "verbinder",
-        "klemme",
-        "klemmen",
-        "tester",
-        "abisolier",
-        "spannung",
-      ],
-    },
-    {
-      category: "Schrauben",
-      keywords: [
-        "schraube",
-        "schrauben",
-        "spax",
-        "torx",
-        "kreuzschlitz",
-        "senkkopf",
-        "holzschraube",
-        "blechschraube",
-        "gewinde",
-      ],
-    },
-    {
-      category: "Bohrer",
-      keywords: [
-        "bohrer",
-        "hss",
-        "steinbohrer",
-        "holzbohrer",
-        "metallbohrer",
-        "forstner",
-      ],
-    },
-    {
-      category: "Dübel",
-      keywords: [
-        "dübel",
-        "duobel",
-        "spreizdübel",
-        "nylondübel",
-      ],
-    },
-    {
-      category: "Holzdübel",
-      keywords: [
-        "holzdübel",
-        "holz dübel",
-        "runddübel",
-      ],
-    },
-    {
-      category: "Unterlegscheiben",
-      keywords: [
-        "unterlegscheibe",
-        "unterlegscheiben",
-        "scheibe",
-        "scheiben",
-      ],
-    },
-    {
-      category: "Nägel",
-      keywords: [
-        "nagel",
-        "nägel",
-        "drahtstift",
-      ],
-    },
-    {
-      category: "Beschläge",
-      keywords: [
-        "beschlag",
-        "beschläge",
-        "scharnier",
-        "winkel",
-        "winkelverbinder",
-        "lochplatte",
-        "lasche",
-        "verbinderplatte",
-        "flachverbinder",
-      ],
-    },
-    {
-      category: "Werkzeug",
-      keywords: [
-        "zange",
-        "hammer",
-        "schraubendreher",
-        "maulschlüssel",
-        "knarre",
-        "werkzeug",
-        "messer",
-      ],
-    },
-    {
-      category: "Maschine",
-      keywords: [
-        "maschine",
-        "akkuschrauber",
-        "bohrmaschine",
-        "stichsäge",
-        "schleifer",
-        "fräse",
-      ],
-    },
-    {
-      category: "Sortimentskasten",
-      keywords: [
-        "sortimentskasten",
-        "sortiment",
-        "kasten",
-        "box",
-      ],
-    },
-  ];
+function getCategoryIcon(category) {
+  const map = {
+    Schrauben: "🔩",
+    Dübel: "🧱",
+    Elektrik: "⚡",
+    Werkzeug: "🧰",
+    Maschine: "⚙️",
+    Nägel: "📌",
+    Beschläge: "⚙️",
+    Sortimentskasten: "🗂️",
+    Unterlegscheiben: "⭕",
+    Holzdübel: "🪵",
+    "Große Box": "📦",
+    Bohrer: "🪛",
+  };
 
-  for (const entry of keywordMap) {
-    if (entry.keywords.some((keyword) => text.includes(keyword))) {
-      return entry.category;
-    }
-  }
-
-  return "";
+  return map[category] || "📁";
 }
 
-function addCategoryPrefixToName(name, category) {
-  const cleanName = String(name || "").trim();
-  const cleanCategory = String(category || "").trim();
-
-  if (!cleanName || !cleanCategory) return cleanName;
-
-  if (hasCategoryPrefix(cleanName, cleanCategory)) {
-    return cleanName;
-  }
-
-  return `${cleanCategory} ${cleanName}`;
-}
-function hasCategoryPrefix(name, category) {
-  const n = String(name || "").trim().toLowerCase();
-  const c = String(category || "").trim().toLowerCase();
-
-  return n.startsWith(c + " ");
-}
-
-function looksLikeSizeOnlyName(name) {
-  const n = String(name || "").trim();
-
-  return /^[0-9]+\s*[x×]\s*[0-9]+/.test(n);
-}
-
-function findSimilarNameCandidates(items, savedItem) {
-  const category = String(savedItem.category || "").trim();
-  const name = String(savedItem.name || "").trim();
-
-  if (!category || !name) return [];
-
-  if (!hasCategoryPrefix(name, category)) {
-    return [];
-  }
-
-  return items.filter((item) => {
-    if (item.id === savedItem.id) return false;
-    if (item.category !== category) return false;
-    if (hasCategoryPrefix(item.name, category)) return false;
-
-    return looksLikeSizeOnlyName(item.name);
-  });
-}
 export default function InventoryScreen({
-  scannedCode = "",
-  onScannedCodeHandled,
   onGoHome,
   onOpenLabelPreview,
   onOpenScanner,
   startMode = "browse",
   userConfig,
 }) {
-
-    const [showEditForm, setShowEditForm] = useState(startMode === "create");
-    const isCreateMode = startMode === "create" || showEditForm;
-
-  const [searchText, setSearchText] = useState("");
+  const [mode, setMode] = useState(startMode === "create" ? "form" : "list");
   const [items, setItems] = useState([]);
-  const [hasLoadedItems, setHasLoadedItems] = useState(false);
-  const listRef = useRef(null);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [showCategories, setShowCategories] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [loading, setLoading] = useState(true);
 
+  const [editingId, setEditingId] = useState(null);
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [shortLabel, setShortLabel] = useState("");
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
-  const [imageUri, setImageUri] = useState("");
-  const [categoryTouched, setCategoryTouched] = useState(false);
-  const [tempImageUri, setTempImageUri] = useState(null);
-  const [showImagePreview, setShowImagePreview] = useState(false);
-  const [imageBase64, setImageBase64] = useState("");
-  const [isAnalyzingImage, setIsAnalyzingImage] = useState(false);
-  const [aiSuggestionText, setAiSuggestionText] = useState("");
-  const [aiSuggestedCategory, setAiSuggestedCategory] = useState("");
 
-  const [editingId, setEditingId] = useState(null);
   const userCategories = userConfig?.categories || CATEGORY_SUGGESTIONS;
 
-useEffect(() => {
+  useEffect(() => {
+    loadItems();
+  }, []);
+
   async function loadItems() {
     try {
+      setLoading(true);
+
       const { data, error } = await supabase
         .from("items")
         .select("*")
@@ -366,7 +117,8 @@ useEffect(() => {
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.log("Supabase Fehler:", error);
+        console.log("Supabase Laden Fehler:", error);
+        Alert.alert("Fehler", error.message || "Inventar konnte nicht geladen werden.");
         return;
       }
 
@@ -378,838 +130,315 @@ useEffect(() => {
       );
     } catch (e) {
       console.log("Laden fehlgeschlagen:", e);
+      Alert.alert("Fehler", "Inventar konnte nicht geladen werden.");
     } finally {
-      setHasLoadedItems(true);
+      setLoading(false);
     }
   }
 
-  loadItems();
-}, []);
-
-  const previewCode = (code || "").trim() || getNextCode(items, category);
-  const availableCategories = [
-  ...new Set([
-    ...userCategories,
-    ...items.map((item) => item.category).filter(Boolean),
-  ]),
-]
-   .sort((a, b) => a.localeCompare(b, "de"));
-
- const filteredItems = items.filter((item) => {
-  const q = searchText.toLowerCase().trim();
-
-  const matchesText =
-    !q ||
-    (item.name || "").toLowerCase().includes(q) ||
-    (item.code || "").toLowerCase().includes(q) ||
-    (item.category || "").toLowerCase().includes(q) ||
-    (item.shortLabel || "").toLowerCase().includes(q) ||
-    (item.location || "").toLowerCase().includes(q);
-
-  const matchesCategory =
-    !selectedCategory || item.category === selectedCategory;
-
-  return matchesText && matchesCategory;
-});
-useEffect(() => {
-  if (!scannedCode) return;
-
-  setSearchText(scannedCode);
-  setSelectedCategory("");
-
-  if (onScannedCodeHandled) {
-    onScannedCodeHandled();
+  function resetForm() {
+    setEditingId(null);
+    setCode("");
+    setName("");
+    setShortLabel("");
+    setCategory("");
+    setLocation("");
   }
-}, [scannedCode, onScannedCodeHandled]);
 
-function applyAutoCategory(nextName, nextShortLabel, nextLocation) {
-  if (categoryTouched) return;
+  function openCreateForm() {
+    resetForm();
+    setMode("form");
+  }
 
-  const suggestion = suggestCategoryFromText({
-    name: nextName,
-    shortLabel: nextShortLabel,
-    location: nextLocation,
+  function openEditForm(item) {
+    setEditingId(item.id);
+    setCode(item.code || "");
+    setName(item.name || "");
+    setShortLabel(item.shortLabel || "");
+    setCategory(item.category || "");
+    setLocation(item.location || "");
+    setMode("form");
+  }
+
+  async function handleSave() {
+    const finalName = name.trim();
+    const finalCategory = category.trim();
+
+    if (!finalName) {
+      Alert.alert("Fehlt noch", "Bitte Name eingeben.");
+      return;
+    }
+
+    if (!finalCategory) {
+      Alert.alert("Fast geschafft", "Kategorie fehlt noch.");
+      return;
+    }
+
+    const itemToSave = {
+      id: editingId || Date.now().toString(),
+      workshop_id: WORKSHOP_ID,
+      code: code.trim() || getNextCode(items, finalCategory),
+      name: finalName,
+      shortLabel: shortLabel.trim(),
+      category: finalCategory,
+      location: location.trim(),
+      image_uri: "",
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await supabase
+      .from("items")
+      .upsert(itemToSave)
+      .select()
+      .single();
+
+    if (error) {
+      console.log("Supabase Speichern Fehler:", error);
+      Alert.alert("Supabase-Fehler", error.message || "Speichern fehlgeschlagen.");
+      return;
+    }
+
+    const savedItem = {
+      ...data,
+      imageUri: data.image_uri,
+    };
+
+    if (editingId) {
+      setItems((prev) =>
+        prev.map((item) => (item.id === editingId ? savedItem : item))
+      );
+    } else {
+      setItems((prev) => [savedItem, ...prev]);
+    }
+
+    resetForm();
+    setMode("list");
+
+    Alert.alert("Gespeichert", "Der Artikel wurde in der Cloud gespeichert.");
+  }
+
+  async function handleDelete(id) {
+    const { error } = await supabase
+      .from("items")
+      .delete()
+      .eq("id", id)
+      .eq("workshop_id", WORKSHOP_ID);
+
+    if (error) {
+      console.log("Supabase Löschen Fehler:", error);
+      Alert.alert("Fehler", error.message || "Löschen fehlgeschlagen.");
+      return;
+    }
+
+    setItems((prev) => prev.filter((item) => item.id !== id));
+  }
+
+  const filteredItems = items.filter((item) => {
+    const q = searchText.toLowerCase().trim();
+
+    if (!q) return true;
+
+    return (
+      (item.name || "").toLowerCase().includes(q) ||
+      (item.shortLabel || "").toLowerCase().includes(q) ||
+      (item.code || "").toLowerCase().includes(q) ||
+      (item.category || "").toLowerCase().includes(q) ||
+      (item.location || "").toLowerCase().includes(q)
+    );
   });
 
-  if (suggestion) {
-    setCategory(suggestion);
-  }
-}
+  if (mode === "form") {
+    const previewCode = code.trim() || getNextCode(items, category);
 
-async function handleTakePhoto() {
-  try {
-    const permission =
-      await ImagePicker.requestCameraPermissionsAsync();
-
-    if (!permission.granted) {
-      Alert.alert("Kamera gesperrt", "Bitte Kamera erlauben.");
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.7,
-      base64: true,
-    });
-
-    if (result.canceled) return;
-
-    const asset = result.assets?.[0];
-
-    if (!asset?.uri) {
-      Alert.alert("Fehler", "Kein Bild empfangen.");
-      return;
-    }
-
-    setTempImageUri(asset.uri);
-    setImageBase64(asset.base64 || "");
-    setAiSuggestionText("");
-    setAiSuggestedCategory("");
-    setShowImagePreview(true);
-  } catch (error) {
-    Alert.alert("Fehler", "Foto konnte nicht aufgenommen werden.");
-    console.log("handleTakePhoto error:", error);
-  }
-}
-
-function resetForm() {
-  setCode("");
-  setName("");
-  setShortLabel("");
-  setCategory("");
-  setLocation("");
-  setImageUri("");
-  setTempImageUri(null);
-  setShowImagePreview(false);
-  setCategoryTouched(false);
-  setEditingId(null);
-  setAiSuggestedCategory("");
-  setShowEditForm(startMode === "create");
-}
-
-function handleUsePreviewImage() {
-  if (!tempImageUri) return;
-
-  setImageUri(tempImageUri);
-  setTempImageUri(null);
-  setShowImagePreview(false);
-}
-
-async function handleRetakeImage() {
-  setTempImageUri(null);
-  setShowImagePreview(false);
-  await handlePickImage();
-}
-async function handleAnalyzePreviewImage() {
-  try {
-    if (!imageBase64) {
-      Alert.alert("Fehler", "Kein Bild für die Analyse vorhanden.");
-      return;
-    }
-
-    setIsAnalyzingImage(true);
-    setAiSuggestionText("");
-    setAiSuggestedCategory("");
-
-    const result = await suggestCategoryFromImage(imageBase64);
-    //Alert.alert("KI Ergebnis", JSON.stringify(result, null, 2));
-
-    if (result.category) {
-      if (!categoryTouched) {
-        setCategory(result.category);
-      }
-
-      setAiSuggestionText(
-        `🦊 KI-Vorschlag: ${result.category} (${result.confidence})`
-      );
-
-      Alert.alert(
-        "Kategorie erkannt",
-        result.reason
-          ? `${result.category}\n\nBegründung: ${result.reason}`
-          : result.category
-      );
-      return;
-    }
-
-    if (result.suggestedCategory) {
-      setAiSuggestedCategory(result.suggestedCategory);
-      setAiSuggestionText(
-        `🦊 Neue Kategorie vorgeschlagen: ${result.suggestedCategory} (${result.confidence})`
-      );
-
-      Alert.alert(
-        "Neue Kategorie vorgeschlagen",
-        result.reason
-          ? `${result.suggestedCategory}\n\nBegründung: ${result.reason}`
-          : result.suggestedCategory
-      );
-      return;
-    }
-
-    Alert.alert("KI", "Es konnte keine Kategorie vorgeschlagen werden.");
-} catch (error) {
-  console.log("handleAnalyzePreviewImage error:", error);
-
-  Alert.alert(
-    "KI-Fehler Debug",
-    error?.message
-      ? error.message
-      : JSON.stringify(error, null, 2)
-  );
-} finally {
-  setIsAnalyzingImage(false);
-}
-}
- async function handleSave() {
-  const finalName = (name || "").trim();
-  const finalCategory = (category || "").trim();
-  const finalCode = (code || "").trim();
-  const finalShortLabel = (shortLabel || "").trim();
-  const finalLocation = (location || "").trim();
-
-  if (finalName.length === 0) {
-    Alert.alert("Fehlt noch", "Bitte Name eingeben.");
-    return;
-  }
-
-  if (finalCategory.length === 0) {
-    Alert.alert("Fast geschafft", "Kategorie fehlt noch.");
-    return;
-  }
-
-  const newOrUpdatedItem = {
-    id: editingId || Date.now().toString(),
-    workshop_id: WORKSHOP_ID,
-    code: finalCode || getNextCode(items, finalCategory),
-    name: finalName,
-    shortLabel: finalShortLabel,
-    category: finalCategory,
-    location: finalLocation,
-    image_uri: imageUri || "",
-    updated_at: new Date().toISOString(),
-  };
-
-  const { data, error } = await supabase
-    .from("items")
-    .upsert(newOrUpdatedItem)
-    .select()
-    .single();
-
-  if (error) {
-    console.log("Speichern in Supabase fehlgeschlagen:", error);
-    Alert.alert("Fehler", "Der Artikel konnte nicht gespeichert werden.");
-    return;
-  }
-
-  const savedItem = {
-    ...data,
-    imageUri: data.image_uri,
-  };
-
-  if (editingId) {
-    setItems((prev) =>
-      prev.map((item) => (item.id === editingId ? savedItem : item))
-    );
-  } else {
-    setItems((prev) => [savedItem, ...prev]);
-  }
-
-  Alert.alert(
-    editingId ? "Gespeichert" : "Artikel angelegt",
-    editingId ? "Änderung in der Cloud übernommen 👍" : "Der Fuchs hat es in der Cloud gespeichert 🔧"
-  );
-
-  resetForm();
-  setSearchText("");
-}
-
-async function handlePickImage() {
-  try {
-    const permission =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (!permission.granted) {
-      Alert.alert(
-        "Galerie gesperrt",
-        "Bitte Zugriff auf Fotos erlauben."
-      );
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.7,
-      base64: true,
-    });
-
-    if (result.canceled) return;
-
-    const asset = result.assets?.[0];
-
-    if (!asset?.uri) {
-      Alert.alert("Fehler", "Kein Bild empfangen.");
-      return;
-    }
-
-    setTempImageUri(asset.uri);
-    setImageBase64(asset.base64 || "");
-    setAiSuggestionText("");
-    setAiSuggestedCategory("");
-    setShowImagePreview(true);
-  } catch (error) {
-    Alert.alert("Fehler", "Bild konnte nicht geladen werden.");
-    console.log("handlePickImage error:", error);
-  }
-}
-
-function handleEdit(item) {
-  setShowEditForm(true);
-  listRef.current?.scrollToOffset({ offset: 0, animated: true });
-
-  setEditingId(item.id);
-  setCode(item.code || "");
-  setName(item.name || "");
-  setShortLabel(item.shortLabel || "");
-  setCategory(item.category || "");
-  setLocation(item.location || "");
-  setImageUri(item.imageUri || "");
-  setCategoryTouched(true);
-}
-
-async function handleDelete(id) {
-  const { error } = await supabase
-    .from("items")
-    .delete()
-    .eq("id", id)
-    .eq("workshop_id", WORKSHOP_ID);
-
-  if (error) {
-    console.log("Löschen in Supabase fehlgeschlagen:", error);
-    Alert.alert("Fehler", "Der Artikel konnte nicht gelöscht werden.");
-    return;
-  }
-
-  setItems((prev) => prev.filter((item) => item.id !== id));
-
-  if (editingId === id) {
-    resetForm();
-  }
-}
-function handleResetAll() {
-  Alert.alert(
-    "⚠️ Komplett zurücksetzen",
-    "ALLE Daten werden gelöscht.\n\nOnboarding + Inventar.\n\nDas kann nicht rückgängig gemacht werden.",
-    [
-      {
-        text: "Abbrechen",
-        style: "cancel",
-      },
-      {
-        text: "Weiter",
-        style: "destructive",
-        onPress: confirmReset,
-      },
-    ]
-  );
-}
-
-function confirmReset() {
-  Alert.alert(
-    "Sicher?",
-    "Wirklich alles löschen?",
-    [
-      {
-        text: "Nein",
-        style: "cancel",
-      },
-      {
-        text: "JA, LÖSCHEN",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await AsyncStorage.removeItem("werkfuchs_inventory_v1");
-            await AsyncStorage.removeItem("userConfig");
-
-            setItems([]);
-
-            Alert.alert(
-              "Erledigt",
-              "App startet neu"
-            );
-
-            // einfacher Restart
-            setTimeout(() => {
-              setItems([]);
-            }, 300);
-
-          } catch (e) {
-            Alert.alert("Fehler", "Reset fehlgeschlagen");
-          }
-        },
-      },
-    ]
-  );
-}
-
-const renderItem = ({ item }) => (
-  <View style={styles.card}>
-
-    <View style={styles.cardTopRow}>
-
-      {/* LINKE SPALTE */}
-      <View style={styles.cardInfo}>
-
-        <Text style={styles.codeText}>
-          {item.code}
-        </Text>
-
-        <Text style={styles.nameText}>
-          {item.shortLabel || item.name}
-        </Text>
-
-        {!!item.location && (
-          <Text style={styles.locationText}>
-            📍 {item.location}
-          </Text>
-        )}
-
-        {!!item.category && (
-          <View
-            style={[
-              styles.categoryBadge,
-              {
-                borderColor: getCategoryColor(item.category),
-                backgroundColor:
-                  getCategoryColor(item.category) + "20",
-              },
-            ]}
+    return (
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={styles.content}
+        >
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => {
+              resetForm();
+              setMode("list");
+            }}
           >
-            <Text
-              style={[
-                styles.categoryBadgeText,
-                {
-                  color: getCategoryColor(item.category),
-                },
-              ]}
-            >
-              {getCategoryIcon(item.category)} {item.category}
-            </Text>
-          </View>
-        )}
+            <Text style={styles.backButtonText}>← Zurück</Text>
+          </TouchableOpacity>
 
-      </View>
+          <Text style={styles.title}>
+            {editingId ? "Fund bearbeiten" : "Neuer Fund"}
+          </Text>
 
-
-      {/* RECHTE SPALTE */}
-      <View style={styles.cardRightColumn}>
-
-        {!!item.code && (
-          <View style={styles.qrWrap}>
-            <ItemQrCode value={item.code} size={56} />
-          </View>
-        )}
-
-        <View style={styles.itemImageWrap}>
-
-          {item.imageUri ? (
-
-            <Image
-              source={{ uri: item.imageUri }}
-              style={styles.itemImage}
+          <View style={styles.formCard}>
+            <TextInput
+              style={styles.input}
+              placeholder="Code"
+              value={code}
+              onChangeText={setCode}
             />
 
-          ) : (
-
-            <View style={styles.itemImagePlaceholder}>
-              <Text style={styles.itemImagePlaceholderText}>
-                Kein Foto
+            {!!category.trim() && (
+              <Text style={styles.codePreview}>
+                {(code || "").trim()
+                  ? `Manueller Code: ${previewCode}`
+                  : `Nächster Code: ${previewCode}`}
               </Text>
+            )}
+
+            <TextInput
+              style={styles.input}
+              placeholder="Name"
+              value={name}
+              onChangeText={setName}
+            />
+
+            <TextInput
+              style={styles.input}
+              placeholder="Kurzbezeichnung"
+              value={shortLabel}
+              onChangeText={setShortLabel}
+            />
+
+            <TextInput
+              style={styles.input}
+              placeholder="Kategorie"
+              value={category}
+              onChangeText={setCategory}
+            />
+
+            <View style={styles.suggestionWrap}>
+              {userCategories.map((cat) => (
+                <TouchableOpacity
+                  key={cat}
+                  style={[
+                    styles.suggestionChip,
+                    category === cat && styles.suggestionChipActive,
+                  ]}
+                  onPress={() => setCategory(cat)}
+                >
+                  <Text
+                    style={[
+                      styles.suggestionChipText,
+                      category === cat && styles.suggestionChipTextActive,
+                    ]}
+                  >
+                    {getCategoryIcon(cat)} {cat}
+                  </Text>
+                </TouchableOpacity>
+              ))}
             </View>
 
-          )}
+            <TextInput
+              style={styles.input}
+              placeholder="Standort"
+              value={location}
+              onChangeText={setLocation}
+            />
 
-        </View>
-
-      </View>
-
-    </View>
-
-
-    {/* BUTTONS */}
-    <View style={styles.cardActions}>
-
-      <TouchableOpacity
-        style={[
-          styles.actionButtonWide,
-          styles.editButtonLight
-        ]}
-        onPress={() => handleEdit(item)}
-      >
-        <Text style={styles.editButtonLightText}>
-          ✏️ Anpassen
-        </Text>
-      </TouchableOpacity>
-
-
-      <TouchableOpacity
-        style={[
-          styles.actionButtonWide,
-          styles.deleteButtonStrong
-        ]}
-        onPress={() => handleDelete(item.id)}
-      >
-        <Text style={styles.actionButtonText}>
-          🗑 Entfernen
-        </Text>
-      </TouchableOpacity>
-
-    </View>
-
-  </View>
-);
-
-const renderHeader = () => (
-  <>
-    <TouchableOpacity style={styles.backButton} onPress={onGoHome}>
-      <Text style={styles.backButtonText}>← Zurück</Text>
-    </TouchableOpacity>
-
-    <Text style={styles.screenTitle}>
-      {isCreateMode ? "Neuer Fund" : "Inventar"}
-    </Text>
-
-    {!isCreateMode && (
-      <TouchableOpacity
-        style={styles.resetButton}
-        onPress={handleResetAll}
-      >
-        <Text style={styles.resetButtonText}>
-          🧨 Komplett zurücksetzen
-        </Text>
-      </TouchableOpacity>
-    )}
-
-    <Text style={styles.subtitleSmall}>
-      Der schlaue Fuchs behält den Überblick. 🦊
-    </Text>
-
-    {isCreateMode && (
-      <>
-        <Text style={styles.sectionTitle}>
-          {editingId ? "Fund bearbeiten" : "Neuer Fund"}
-        </Text>
-
-        <View style={styles.formCard}>
-          <TextInput
-            style={styles.input}
-            placeholder="Code"
-            value={code}
-            onChangeText={setCode}
-          />
-
-          {!!category.trim() && (
-            <Text style={styles.codePreview}>
-              {(code || "").trim()
-                ? `Manueller Code: ${previewCode}`
-                : `Nächster Code: ${previewCode}`}
-            </Text>
-          )}
-
-          <TextInput
-            style={styles.input}
-            placeholder="Name"
-            value={name}
-            onChangeText={(text) => {
-              setName(text);
-              applyAutoCategory(text, shortLabel, location);
-            }}
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Kurzbezeichnung"
-            value={shortLabel}
-            onChangeText={(text) => {
-              setShortLabel(text);
-              applyAutoCategory(name, text, location);
-            }}
-          />
-
-          <TextInput
-            style={styles.input}
-            placeholder="Kategorie"
-            value={category}
-            onChangeText={(text) => {
-              setCategoryTouched(true);
-              setCategory(text);
-            }}
-          />
-
-          <View style={styles.suggestionWrap}>
-            {userCategories.filter((item) =>
-              item.toLowerCase().includes((category || "").toLowerCase())
-            ).map((item) => (
-              <TouchableOpacity
-                key={item}
-                style={[
-                  styles.suggestionChip,
-                  category === item && styles.suggestionChipActive,
-                ]}
-                onPress={() => {
-                  setCategoryTouched(true);
-                  setCategory(item);
-                }}
-              >
-                <Text
-                  style={[
-                    styles.suggestionChipText,
-                    category === item && styles.suggestionChipTextActive,
-                  ]}
-                >
-                  {item}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          <TextInput
-            style={styles.input}
-            placeholder="Standort"
-            value={location}
-            onChangeText={(text) => {
-              setLocation(text);
-              applyAutoCategory(name, shortLabel, text);
-            }}
-          />
-
-            <TouchableOpacity
-              style={styles.photoButton}
-              onPress={handleTakePhoto}
-            >
-              <Text style={styles.photoButtonText}>
-                📸 Fund aufnehmen
-              </Text>
-            </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.photoButton}
-            onPress={handlePickImage}
-          >
-            <Text style={styles.photoButtonText}>
-              🖼️ Aus Galerie wählen
-            </Text>
-          </TouchableOpacity>
-          
-    {showImagePreview && tempImageUri ? (
-      <View style={styles.previewOverlay}>
-        <Text style={styles.previewTitle}>🦊 Fund prüfen</Text>
-
-        <Image
-          source={{ uri: tempImageUri }}
-          style={styles.previewImage}
-        />
-        <TouchableOpacity
-          style={styles.aiAnalyzeButton}
-          onPress={handleAnalyzePreviewImage}
-          disabled={isAnalyzingImage}
-        >
-          <Text style={styles.aiAnalyzeButtonText}>
-            {isAnalyzingImage ? "🦊 Analysiere..." : "🦊 Kategorie per KI erkennen"}
-          </Text>
-        </TouchableOpacity>
-
-        {!!aiSuggestionText && (
-          <Text style={styles.aiSuggestionText}>{aiSuggestionText}</Text>
-        )}
-{!!aiSuggestedCategory && (
-  <TouchableOpacity
-    style={styles.aiUseSuggestedCategoryButton}
-    onPress={() => {
-      setCategoryTouched(true);
-      setCategory(aiSuggestedCategory);
-      setAiSuggestedCategory("");
-    }}
-  >
-    <Text style={styles.aiUseSuggestedCategoryButtonText}>
-      🦊 Neue Kategorie übernehmen: {aiSuggestedCategory}
-    </Text>
-  </TouchableOpacity>
-)}
-
-        <View style={styles.previewButtons}>
-          <TouchableOpacity
-            style={styles.previewCancel}
-            onPress={handleRetakeImage}
-          >
-            <Text style={styles.previewCancelText}>🔄 Neu fotografieren</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.previewConfirm}
-            onPress={handleUsePreviewImage}
-          >
-        <Text style={styles.previewConfirmText}>✅ Verwenden</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-) : null}
-
-          <View style={styles.formButtons}>
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
               <Text style={styles.saveButtonText}>
                 {editingId ? "Änderungen speichern" : "Artikel anlegen"}
               </Text>
             </TouchableOpacity>
-
-            <TouchableOpacity style={styles.cancelButton} onPress={resetForm}>
-              <Text style={styles.cancelButtonText}>Zurücksetzen</Text>
-            </TouchableOpacity>
           </View>
-        </View>
-      </>
-    )}
-{!isCreateMode && (
-  <View style={styles.topActionRow}>
-    <TouchableOpacity
-      style={styles.printButtonHalf}
-      onPress={onOpenLabelPreview}
-    >
-      <Text style={styles.printButtonText}>🖨 Etiketten</Text>
-    </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    );
+  }
 
-    <TouchableOpacity
-      style={styles.scanButtonHalf}
-      onPress={onOpenScanner}
-    >
-      <Text style={styles.scanButtonText}>📷 Scanner</Text>
-    </TouchableOpacity>
-  </View>
-)}
-    {!isCreateMode && (
-      <View style={styles.searchBox}>
-        <TextInput
-          style={styles.searchInputLarge}
-          placeholder="Fund suchen..."
-          value={searchText}
-          onChangeText={setSearchText}
-        />
-
-      {!!searchText && (
-        <TouchableOpacity
-          style={styles.searchClearButton}
-          onPress={() => setSearchText("")}
-        >
-      <Text style={styles.searchClearText}>×</Text>
-    </TouchableOpacity>
-  )}
-</View>
-    )}
-{!isCreateMode && (
-  <>
-    <TouchableOpacity
-      style={styles.categoryToggle}
-      onPress={() => setShowCategories((prev) => !prev)}
-    >
-      <Text style={styles.categoryHeadline}>
-        Kategorien {showCategories ? "▲" : "▼"}
-      </Text>
-    </TouchableOpacity>
-
-    {showCategories && (
-      <View style={styles.filterWrap}>
-        <TouchableOpacity
-          style={[
-            styles.categoryFilterChip,
-            {
-              borderColor: !selectedCategory ? "#1B2A3A" : "#9ca3af",
-              backgroundColor: !selectedCategory ? "#1B2A3A" : "#FFFFFF",
-            },
-          ]}
-          onPress={() => setSelectedCategory("")}
-        >
-          <Text
-            style={[
-              styles.categoryFilterText,
-              { color: !selectedCategory ? "#FFFFFF" : "#374151" },
-            ]}
-          >
-            📚 Alle
-          </Text>
-        </TouchableOpacity>
-
-        {availableCategories.map((cat) => {
-          const isActive = selectedCategory === cat;
-          const chipColor = getCategoryColor(cat);
-
-          return (
-            <TouchableOpacity
-              key={cat}
-              style={[
-                styles.categoryFilterChip,
-                {
-                  borderColor: chipColor,
-                  backgroundColor: isActive ? chipColor : "#FFFFFF",
-                },
-              ]}
-              onPress={() => setSelectedCategory(cat)}
-            >
-              <Text
-                style={[
-                  styles.categoryFilterText,
-                  { color: isActive ? "#FFFFFF" : chipColor },
-                ]}
-              >
-                {getCategoryIcon(cat)} {cat}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-    )}
-  </>
-)}
-
-{!isCreateMode && (
-  <Text style={styles.resultsText}>
-    {filteredItems.length} Funde
-  </Text>
-)}
-
-  </>
-);
-return (
-  <KeyboardAvoidingView
-    style={styles.container}
-    behavior={Platform.OS === "ios" ? "padding" : "height"}
-  >
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+  return (
+    <View style={styles.container}>
       <FlatList
-        ref={listRef}
-        data={isCreateMode ? [] : filteredItems}
-        renderItem={renderItem}
+        data={filteredItems}
         keyExtractor={(item) => item.id}
-        ListHeaderComponent={renderHeader}
-        contentContainerStyle={styles.listContent}
         keyboardShouldPersistTaps="handled"
+        contentContainerStyle={styles.content}
+        ListHeaderComponent={
+          <>
+            <TouchableOpacity style={styles.backButton} onPress={onGoHome}>
+              <Text style={styles.backButtonText}>← Zurück</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.title}>Inventar</Text>
+            <Text style={styles.subtitle}>Der schlaue Fuchs behält den Überblick. 🦊</Text>
+
+            <TouchableOpacity style={styles.primaryButton} onPress={openCreateForm}>
+              <Text style={styles.primaryButtonText}>＋ Neuer Fund</Text>
+            </TouchableOpacity>
+
+            <View style={styles.actionRow}>
+              <TouchableOpacity style={styles.secondaryButton} onPress={onOpenLabelPreview}>
+                <Text style={styles.secondaryButtonText}>🖨 Etiketten</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.secondaryButton} onPress={onOpenScanner}>
+                <Text style={styles.secondaryButtonText}>📷 Scanner</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Fund suchen..."
+              value={searchText}
+              onChangeText={setSearchText}
+            />
+
+            <Text style={styles.resultsText}>
+              {loading ? "Lade Inventar..." : `${filteredItems.length} Funde`}
+            </Text>
+          </>
+        }
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <Text style={styles.codeText}>{item.code}</Text>
+            <Text style={styles.nameText}>{item.shortLabel || item.name}</Text>
+
+            {!!item.category && (
+              <Text style={styles.metaText}>
+                {getCategoryIcon(item.category)} {item.category}
+              </Text>
+            )}
+
+            {!!item.location && (
+              <Text style={styles.metaText}>📍 {item.location}</Text>
+            )}
+
+            <View style={styles.cardActions}>
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => openEditForm(item)}
+              >
+                <Text style={styles.editButtonText}>✏️ Anpassen</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => handleDelete(item.id)}
+              >
+                <Text style={styles.deleteButtonText}>🗑 Entfernen</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       />
-    </TouchableWithoutFeedback>
-  </KeyboardAvoidingView>
-);
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#F3F4F6",
-    paddingHorizontal: 16,
-    paddingTop: 50,
   },
 
-  listContent: {
-    paddingBottom: 30,
+  content: {
+    padding: 16,
+    paddingTop: 50,
+    paddingBottom: 40,
   },
 
   backButton: {
@@ -1229,70 +458,25 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
 
-  screenTitle: {
+  title: {
     fontSize: 28,
     fontWeight: "800",
     textAlign: "center",
     color: "#1F2A37",
-    marginBottom: 4,
+    marginBottom: 8,
   },
 
-  subtitleSmall: {
+  subtitle: {
     fontSize: 14,
     color: "#6B7280",
     textAlign: "center",
-    marginTop: 6,
     marginBottom: 18,
-  },
-
-   topActionRow: {
-    flexDirection: "row",
-    gap: 12,
-    marginBottom: 18,
-  },
-
-  printButtonHalf: {
-    flex: 1,
-    backgroundColor: "#FF6B00",
-    paddingVertical: 16,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  scanButtonHalf: {
-    flex: 1,
-    backgroundColor: "#1B2A3A",
-    paddingVertical: 16,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  printButtonText: {
-    color: "#FFFFFF",
-    fontWeight: "700",
-    fontSize: 16,
-  },
-
-  scanButtonText: {
-    color: "#FFFFFF",
-    fontWeight: "700",
-    fontSize: 16,
-  },
-
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 10,
-    color: "#1F2A37",
   },
 
   formCard: {
     backgroundColor: "#FFFFFF",
     borderRadius: 16,
     padding: 14,
-    marginBottom: 18,
     borderWidth: 1,
     borderColor: "#E5E7EB",
   },
@@ -1310,7 +494,6 @@ const styles = StyleSheet.create({
   },
 
   codePreview: {
-    marginTop: 2,
     marginBottom: 12,
     fontSize: 13,
     color: "#6B7280",
@@ -1321,7 +504,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-    marginTop: -2,
     marginBottom: 12,
   },
 
@@ -1332,7 +514,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 999,
-    alignSelf: "flex-start",
   },
 
   suggestionChipActive: {
@@ -1350,32 +531,12 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
 
-  photoButton: {
-    backgroundColor: "#1B2A3A",
-    padding: 12,
-    borderRadius: 10,
-    marginTop: 10,
-  },
-
-  photoButtonText: {
-    color: "#FFFFFF",
-    textAlign: "center",
-    fontWeight: "600",
-    fontSize: 15,
-  },
-
-  formButtons: {
-    flexDirection: "row",
-    gap: 10,
-    marginTop: 12,
-  },
-
   saveButton: {
-    flex: 1,
     backgroundColor: "#FF6B00",
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: "center",
+    marginTop: 8,
   },
 
   saveButtonText: {
@@ -1384,23 +545,40 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
 
-  cancelButton: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-    paddingVertical: 14,
-    borderRadius: 12,
+  primaryButton: {
+    backgroundColor: "#FF6B00",
+    paddingVertical: 16,
+    borderRadius: 16,
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#D0D5DD",
+    marginBottom: 12,
   },
 
-  cancelButtonText: {
-    color: "#1F2A37",
+  primaryButtonText: {
+    color: "#FFFFFF",
+    fontWeight: "800",
+    fontSize: 16,
+  },
+
+  actionRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 18,
+  },
+
+  secondaryButton: {
+    flex: 1,
+    backgroundColor: "#1B2A3A",
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: "center",
+  },
+
+  secondaryButtonText: {
+    color: "#FFFFFF",
     fontWeight: "700",
-    fontSize: 15,
   },
 
-  searchInputLarge: {
+  searchInput: {
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#D1D5DB",
@@ -1408,35 +586,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 16,
     fontSize: 18,
-    marginBottom: 18,
+    marginBottom: 14,
     color: "#1F2A37",
-  },
-
-  categoryHeadline: {
-    fontSize: 16,
-    fontWeight: "800",
-    color: "#1F2A37",
-  },
-
-  filterWrap: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginBottom: 18,
-  },
-
-  categoryFilterChip: {
-    borderWidth: 2,
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    backgroundColor: "#FFFFFF",
-    alignSelf: "flex-start",
-  },
-
-  categoryFilterText: {
-    fontSize: 13,
-    fontWeight: "700",
   },
 
   resultsText: {
@@ -1455,23 +606,10 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
   },
 
-  cardTopRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 14,
-  },
-
-  cardInfo: {
-    flex: 1,
-    paddingRight: 8,
-    justifyContent: "space-between",
-  },
-
   codeText: {
     fontSize: 14,
     fontWeight: "800",
     color: "#FF6B00",
-    letterSpacing: 0.5,
     marginBottom: 6,
   },
 
@@ -1479,64 +617,13 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     color: "#111827",
-    marginBottom: 6,
+    marginBottom: 8,
   },
 
-  locationText: {
+  metaText: {
     fontSize: 14,
     color: "#6B7280",
-    marginBottom: 10,
-  },
-
-  categoryBadge: {
-    alignSelf: "flex-start",
-    borderWidth: 1,
-    borderColor: "#3B82F6",
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: "#EFF6FF",
-  },
-
-  categoryBadgeText: {
-  fontWeight: "700",
-  fontSize: 13,
-  },
-
-  qrWrap: {
-    alignItems: "center",
-    justifyContent: "center",
-    opacity: 0.85,
-  },
-
-  itemImageWrap: {
-    width: 96,
-    height: 96,
-    borderRadius: 18,
-    overflow: "hidden",
-    backgroundColor: "#F3F4F6",
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-  },
-
-  itemImage: {
-    width: "100%",
-    height: "100%",
-  },
-
-  itemImagePlaceholder: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#F3F4F6",
-    paddingHorizontal: 6,
-  },
-
-  itemImagePlaceholderText: {
-    color: "#9CA3AF",
-    fontSize: 11,
-    textAlign: "center",
-    fontWeight: "600",
+    marginBottom: 4,
   },
 
   cardActions: {
@@ -1545,176 +632,31 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
 
-  actionButtonWide: {
+  editButton: {
     flex: 1,
+    backgroundColor: "#F9FAFB",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
     paddingVertical: 14,
     borderRadius: 14,
     alignItems: "center",
   },
 
-  editButtonLight: {
-    backgroundColor: "#F9FAFB",
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-  },
-
-  editButtonLightText: {
+  editButtonText: {
     color: "#374151",
     fontWeight: "700",
-    fontSize: 16,
   },
 
-  deleteButtonStrong: {
+  deleteButton: {
+    flex: 1,
     backgroundColor: "#DC2626",
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: "center",
   },
 
-  actionButtonText: {
+  deleteButtonText: {
     color: "#FFFFFF",
     fontWeight: "700",
-    fontSize: 16,
   },
-
-  cardRightColumn: {
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 10,
-  },
-
-  previewOverlay: {
-  marginTop: 12,
-  backgroundColor: "#FFFFFF",
-  borderRadius: 12,
-  padding: 12,
-  borderWidth: 1,
-  borderColor: "#D0D5DD",
-},
-
-previewTitle: {
-  fontSize: 16,
-  fontWeight: "700",
-  marginBottom: 10,
-  textAlign: "center",
-  color: "#1F2A37",
-},
-
-previewImage: {
-  width: "100%",
-  height: 200,
-  borderRadius: 10,
-  marginBottom: 12,
-},
-
-previewButtons: {
-  flexDirection: "row",
-  gap: 10,
-},
-
-previewCancel: {
-  flex: 1,
-  backgroundColor: "#FFFFFF",
-  borderWidth: 1,
-  borderColor: "#D0D5DD",
-  borderRadius: 10,
-  paddingVertical: 12,
-  alignItems: "center",
-},
-
-previewCancelText: {
-  fontWeight: "600",
-  color: "#1F2A37",
-},
-
-previewConfirm: {
-  flex: 1,
-  backgroundColor: "#FF6B00",
-  borderRadius: 10,
-  paddingVertical: 12,
-  alignItems: "center",
-},
-
-previewConfirmText: {
-  color: "#FFFFFF",
-  fontWeight: "700",
-},
-
-aiUseSuggestedCategoryButton: {
-  backgroundColor: "#1F2A37",
-  borderRadius: 10,
-  paddingVertical: 12,
-  alignItems: "center",
-  marginBottom: 12,
-},
-
-aiUseSuggestedCategoryButtonText: {
-  color: "#FFFFFF",
-  fontWeight: "700",
-  textAlign: "center",
-  paddingHorizontal: 10,
-},
-
-aiAnalyzeButton: {
-  backgroundColor: "#FF6B00",
-  borderRadius: 10,
-  paddingVertical: 12,
-  alignItems: "center",
-  marginBottom: 10,
-},
-
-aiAnalyzeButtonText: {
-  color: "#FFFFFF",
-  fontWeight: "700",
-  textAlign: "center",
-},
-
-aiSuggestionText: {
-  color: "#1F2A37",
-  fontSize: 14,
-  fontWeight: "600",
-  marginBottom: 10,
-  textAlign: "center",
-},
-
-searchBox: {
-  position: "relative",
-  marginBottom: 18,
-},
-
-searchClearButton: {
-  position: "absolute",
-  right: 14,
-  top: 13,
-  width: 28,
-  height: 28,
-  borderRadius: 14,
-  backgroundColor: "#E5E7EB",
-  alignItems: "center",
-  justifyContent: "center",
-},
-
-searchClearText: {
-  fontSize: 20,
-  color: "#6B7280",
-  fontWeight: "700",
-  lineHeight: 22,
-},
-
-categoryToggle: {
-  marginBottom: 12,
-},
-
-resetButton: {
-  backgroundColor: "#FEE2E2",
-  borderRadius: 14,
-  paddingVertical: 10,
-  paddingHorizontal: 14,
-  alignSelf: "center",
-  marginTop: 10,
-  marginBottom: 10,
-},
-
-resetButtonText: {
-  color: "#DC2626",
-  fontWeight: "800",
-  fontSize: 13,
-},
 });

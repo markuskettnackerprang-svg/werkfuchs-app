@@ -7,17 +7,14 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-
     "ios": {
       "supportsTablet": true
     },
-
     "android": {
       "package": "com.mkp1981.werkfuchs",
       "adaptiveIcon": {
@@ -26,17 +23,20 @@
       },
       "edgeToEdgeEnabled": true
     },
-
     "web": {
       "favicon": "./assets/favicon.png"
     },
-
     "description": "Werkstatt- und Inventarorganisation. Der schlaue Fuchs behält den Überblick.",
-
     "extra": {
       "eas": {
         "projectId": "caf1f101-a172-42f5-9229-e1cabc6eec06"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/caf1f101-a172-42f5-9229-e1cabc6eec06"
     }
   }
 }
