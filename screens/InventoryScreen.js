@@ -1185,6 +1185,7 @@ const renderHeader = () => (
     {filteredItems.length} Funde
   </Text>
 )}
+
   </>
 );
 
@@ -1199,7 +1200,7 @@ return (
         data={isCreateMode ? [] : filteredItems}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        ListHeaderComponent={renderHeader()}
+        ListHeaderComponent={renderHeader}
         contentContainerStyle={styles.listContent}
         keyboardShouldPersistTaps="handled"
       />
@@ -1207,7 +1208,6 @@ return (
   </KeyboardAvoidingView>
 );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
