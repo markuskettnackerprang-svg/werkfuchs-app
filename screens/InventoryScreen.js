@@ -16,9 +16,7 @@ import {
 } from "react-native";
 
 import * as ImagePicker from "expo-image-picker";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import ItemQrCode from "../components/ItemQrCode";
-import inventoryData from "../data/inventoryData";
 import { theme } from "../utils/theme";
 import { supabase } from "../services/supabaseClient";
 
@@ -118,7 +116,6 @@ const CATEGORY_COLORS = {
   "Große Box": "#374151",
   Sortimentskasten: "#9333EA",
 };
-const STORAGE_KEY = "werkfuchs_inventory_v1";
 
 function getCategoryPrefix(category) {
   const clean = (category || "").trim();
@@ -335,16 +332,6 @@ export default function InventoryScreen({
     const [showEditForm, setShowEditForm] = useState(startMode === "create");
     const isCreateMode = startMode === "create" || showEditForm;
     
-function findSimilarNameCandidates(items, savedItem) {
-  const category = String(savedItem.category || "").trim();
-  const name = String(savedItem.name || "").trim();
-
-  if (!category || !name) return [];
-
-  if (!hasCategoryPrefix(name, category)) {
-    return [];
-  }
-
   return items.filter((item) => {
     if (item.id === savedItem.id) return false;
     if (item.category !== category) return false;
@@ -391,7 +378,12 @@ useEffect(() => {
         return;
       }
 
-      setItems(data || []);
+      setItems(
+        (data || []).map((item) => ({
+          ...item,
+          imageUri: item.image_uri,
+        }))
+      );
     } catch (e) {
       console.log("Laden fehlgeschlagen:", e);
     } finally {
@@ -401,23 +393,6 @@ useEffect(() => {
 
   loadItems();
 }, []);
-
-useEffect(() => {
-  if (!hasLoadedItems) return;
-
-  async function saveItems() {
-    try {
-      await AsyncStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(items)
-      );
-    } catch (e) {
-      console.log("Speichern fehlgeschlagen:", e);
-    }
-  }
-
-  saveItems();
-}, [items, hasLoadedItems]);
 
   const previewCode = (code || "").trim() || getNextCode(items, category);
   const availableCategories = [
@@ -595,83 +570,68 @@ async function handleAnalyzePreviewImage() {
   setIsAnalyzingImage(false);
 }
 }
-  function handleSave() {
-    const finalName = (name || "").trim();
-    const finalCategory = (category || "").trim();
-    const finalCode = (code || "").trim();
-    const finalShortLabel = (shortLabel || "").trim();
-    const finalLocation = (location || "").trim();
+ async function handleSave() {
+  const finalName = (name || "").trim();
+  const finalCategory = (category || "").trim();
+  const finalCode = (code || "").trim();
+  const finalShortLabel = (shortLabel || "").trim();
+  const finalLocation = (location || "").trim();
 
-    if (finalName.length === 0) {
-      Alert.alert("Fehlt noch", "Bitte Name eingeben.");
-      return;
-    }
+  if (finalName.length === 0) {
+    Alert.alert("Fehlt noch", "Bitte Name eingeben.");
+    return;
+  }
 
-    if (finalCategory.length === 0) {
-      Alert.alert("Fast geschafft", "Kategorie fehlt noch.");
-      return;
-    }
+  if (finalCategory.length === 0) {
+    Alert.alert("Fast geschafft", "Kategorie fehlt noch.");
+    return;
+  }
 
-    const newOrUpdatedItem = {
-      id: editingId || Date.now().toString(),
-      code: finalCode || getNextCode(items, finalCategory),
-      name: finalName,
-      shortLabel: finalShortLabel,
-      category: finalCategory,
-      location: finalLocation,
-      imageUri: imageUri,
-    };
+  const newOrUpdatedItem = {
+    id: editingId || Date.now().toString(),
+    workshop_id: WORKSHOP_ID,
+    code: finalCode || getNextCode(items, finalCategory),
+    name: finalName,
+    shortLabel: finalShortLabel,
+    category: finalCategory,
+    location: finalLocation,
+    image_uri: imageUri || "",
+    updated_at: new Date().toISOString(),
+  };
 
-    const similarNameCandidates = findSimilarNameCandidates(items, newOrUpdatedItem);
-    const similarIds = similarNameCandidates.map((item) => item.id);
+  const { data, error } = await supabase
+    .from("items")
+    .upsert(newOrUpdatedItem)
+    .select()
+    .single();
 
-if (editingId) {
-  setItems((prev) =>
-    prev.map((item) => (item.id === editingId ? newOrUpdatedItem : item))
-  );
-} else {
-  setItems((prev) => [newOrUpdatedItem, ...prev]);
-}
+  if (error) {
+    console.log("Speichern in Supabase fehlgeschlagen:", error);
+    Alert.alert("Fehler", "Der Artikel konnte nicht gespeichert werden.");
+    return;
+  }
 
-if (similarNameCandidates.length > 0) {
-  Alert.alert(
-    "Ähnliche Einträge gefunden",
-    `${newOrUpdatedItem.category} bei ${similarNameCandidates.length} ähnlichen Einträgen ergänzen?`,
-    [
-      {
-        text: "Nein",
-        style: "cancel",
-      },
-      {
-        text: "Ja",
-        onPress: () => {
-          setItems((prev) =>
-            prev.map((item) =>
-              similarIds.includes(item.id)
-                ? {
-                    ...item,
-                    name: addCategoryPrefixToName(
-                      item.name,
-                      newOrUpdatedItem.category
-                    ),
-                  }
-                : item
-            )
-          );
-        },
-      },
-    ]
-  );
-} else {
+  const savedItem = {
+    ...data,
+    imageUri: data.image_uri,
+  };
+
+  if (editingId) {
+    setItems((prev) =>
+      prev.map((item) => (item.id === editingId ? savedItem : item))
+    );
+  } else {
+    setItems((prev) => [savedItem, ...prev]);
+  }
+
   Alert.alert(
     editingId ? "Gespeichert" : "Artikel angelegt",
-    editingId ? "Änderung übernommen 👍" : "Der Fuchs dankt Dir 🔧"
+    editingId ? "Änderung in der Cloud übernommen 👍" : "Der Fuchs hat es in der Cloud gespeichert 🔧"
   );
-}
 
-    resetForm();
-    setSearchText("");
-  }
+  resetForm();
+  setSearchText("");
+}
 
 async function handlePickImage() {
   try {
@@ -727,13 +687,25 @@ function handleEdit(item) {
   setCategoryTouched(true);
 }
 
-  function handleDelete(id) {
-    setItems((prev) => prev.filter((item) => item.id !== id));
+async function handleDelete(id) {
+  const { error } = await supabase
+    .from("items")
+    .delete()
+    .eq("id", id)
+    .eq("workshop_id", WORKSHOP_ID);
 
-    if (editingId === id) {
-      resetForm();
-    }
+  if (error) {
+    console.log("Löschen in Supabase fehlgeschlagen:", error);
+    Alert.alert("Fehler", "Der Artikel konnte nicht gelöscht werden.");
+    return;
   }
+
+  setItems((prev) => prev.filter((item) => item.id !== id));
+
+  if (editingId === id) {
+    resetForm();
+  }
+}
 function handleResetAll() {
   Alert.alert(
     "⚠️ Komplett zurücksetzen",
