@@ -252,6 +252,7 @@ export default function InventoryScreen({
     setShortLabel("");
     setCategory("");
     setLocation("");
+    setImageUri("");
   }
 
   function openCreateForm() {
@@ -266,6 +267,7 @@ export default function InventoryScreen({
     setShortLabel(item.shortLabel || "");
     setCategory(item.category || "");
     setLocation(item.location || "");
+    setImageUri(item.image_uri || "");
     setMode("form");
   }
 
@@ -360,7 +362,7 @@ export default function InventoryScreen({
     if (!q) return true;
 
     return (
-      (item.name || "").toLowerCase().includes(q)
+      (item.name || "").toLowerCase().includes(q) ||
       (item.shortLabel || "").toLowerCase().includes(q) ||
       (item.code || "").toLowerCase().includes(q) ||
       (item.category || "").toLowerCase().includes(q) ||
