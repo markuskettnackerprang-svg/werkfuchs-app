@@ -189,22 +189,15 @@ export default function InventoryScreen({
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `${WORKSHOP_ID}/${fileName}`;
 
-    const blob = await new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.onload = function () {
-        resolve(xhr.response);
-      };
-      xhr.onerror = function () {
-        reject(new Error("Bilddatei konnte nicht gelesen werden."));
-      };
-      xhr.responseType = "blob";
-      xhr.open("GET", uri, true);
-      xhr.send(null);
+    const base64 = await FileSystem.readAsStringAsync(uri, {
+      encoding: FileSystem.EncodingType.Base64,
     });
+
+    const arrayBuffer = decode(base64);
 
     const { error } = await supabase.storage
       .from("item-images")
-      .upload(filePath, blob, {
+      .upload(filePath, arrayBuffer, {
         contentType: `image/${fileExt}`,
         upsert: false,
       });
