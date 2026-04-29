@@ -270,7 +270,7 @@ export default function InventoryScreen({
           </TouchableOpacity>
 
           <Text style={styles.title}>
-            {editingId ? "Fund bearbeiten" : "Neuer Fund"}
+            {editingId ? "Alles vernichten" : "Krieg"}
           </Text>
 
           <View style={styles.formCard}>
