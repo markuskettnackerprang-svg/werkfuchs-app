@@ -662,7 +662,7 @@ const styles = StyleSheet.create({
 
   deleteButtonText: {
     color: "#FFFFFF",
-    fontWeight: "700",
+    fontWeight: "690",
   },
 
   label: {
