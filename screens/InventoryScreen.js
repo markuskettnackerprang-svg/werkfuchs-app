@@ -384,8 +384,8 @@ async function handlePickImage() {
             <Text style={styles.label}>Bild</Text>
 
             <View style={styles.imageButtonRow}>
-              <TouchableOpacity style={styles.secondaryButton} onPress={handleTakePhoto}>
-               <Text style={styles.secondaryButtonText}>📸 Kamera</Text>
+              <TouchableOpacity style={styles.secondaryButton} onPress={() => alert("Kamera wird noch stabilisiert. Bitte vorerst Galerie nutzen.")}>
+                <Text style={styles.secondaryButtonText}>📸 Kamera</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.secondaryButton} onPress={handlePickImage}>
