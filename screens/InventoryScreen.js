@@ -406,6 +406,7 @@ export default function InventoryScreen({
               <Text style={styles.metaText}>
                 {getCategoryIcon(item.category)} {item.category}
               </Text>
+              <Text>Bild: noch keines</Text>
             )}
 
             {!!item.location && (
