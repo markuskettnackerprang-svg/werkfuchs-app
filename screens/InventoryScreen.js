@@ -274,12 +274,13 @@ export default function InventoryScreen({
           </Text>
 
           <View style={styles.formCard}>
+            <Text style={styles.label}>Code</Text>
             <TextInput
               style={styles.input}
-              placeholder="Code"
+              placeholder="z. B. S-01 oder leer lassen"
               value={code}
               onChangeText={setCode}
-            />
+          />
 
             {!!category.trim() && (
               <Text style={styles.codePreview}>
@@ -289,23 +290,26 @@ export default function InventoryScreen({
               </Text>
             )}
 
+            <Text style={styles.label}>Bezeichnung</Text>
             <TextInput
               style={styles.input}
-              placeholder="Name"
+              placeholder="z. B. Spax Schrauben 4x40"
               value={name}
               onChangeText={setName}
             />
 
+            <Text style={styles.label}>Kurzbezeichnung</Text>
             <TextInput
               style={styles.input}
-              placeholder="Kurzbezeichnung"
+              placeholder="z. B. Schrauben"
               value={shortLabel}
               onChangeText={setShortLabel}
             />
 
+            <Text style={styles.label}>Kategorie</Text>
             <TextInput
               style={styles.input}
-              placeholder="Kategorie"
+              placeholder="z. B. Schrauben, Werkzeug, Dübel"
               value={category}
               onChangeText={setCategory}
             />
@@ -332,9 +336,10 @@ export default function InventoryScreen({
               ))}
             </View>
 
+            <Text style={styles.label}>Lagerort</Text>
             <TextInput
               style={styles.input}
-              placeholder="Standort"
+              placeholder="z. B. Box 1 oder Regal A"
               value={location}
               onChangeText={setLocation}
             />
@@ -659,4 +664,12 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "700",
   },
+
+  label: {
+  fontSize: 14,
+  fontWeight: "600",
+  marginTop: 12,
+  marginBottom: 4,
+  color: "#374151",
+},
 });
