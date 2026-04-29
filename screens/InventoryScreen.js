@@ -100,7 +100,8 @@ export default function InventoryScreen({
   const [shortLabel, setShortLabel] = useState("");
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
-
+  const [imageUri, setImageUri] = useState("");
+  
   const userCategories = userConfig?.categories || CATEGORY_SUGGESTIONS;
 
   useEffect(() => {
@@ -183,7 +184,7 @@ export default function InventoryScreen({
       shortLabel: shortLabel.trim(),
       category: finalCategory,
       location: location.trim(),
-      image_uri: "",
+      image_uri: imageUri,
       updated_at: new Date().toISOString(),
     };
 
@@ -298,7 +299,13 @@ export default function InventoryScreen({
               value={name}
               onChangeText={setName}
             />
-
+                
+            <TextInput
+              placeholder="Bild-URL (optional)"
+              value={imageUri}
+              onChangeText={setImageUri}
+            />
+                
             <Text style={styles.label}>Kurzbezeichnung</Text>
             <TextInput
               style={styles.input}
