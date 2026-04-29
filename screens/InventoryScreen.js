@@ -401,6 +401,10 @@ export default function InventoryScreen({
           <View style={styles.card}>
             <Text style={styles.codeText}>{item.code}</Text>
             <Text style={styles.nameText}>{item.shortLabel || item.name}</Text>
+          
+            <Text>
+              Bild: {item.image_uri ? "vorhanden" : "noch keines"}
+            </Text>
 
             {!!item.category && (
               <Text style={styles.metaText}>
@@ -408,9 +412,7 @@ export default function InventoryScreen({
               </Text>
              )}
 
-             <Text>
-              Bild: {item.image_uri ? "vorhanden" : "noch keines"}
-             </Text>
+             
 
             {!!item.location && (
               <Text style={styles.metaText}>📍 {item.location}</Text>
