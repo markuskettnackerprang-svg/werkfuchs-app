@@ -278,7 +278,18 @@ export default function InventoryScreen({
       return;
     }
     
-    const uploadedImageUri = await uploadImageIfNeeded(imageUri);
+    let uploadedImageUri = imageUri;
+
+  try {
+    uploadedImageUri = await uploadImageIfNeeded(imageUri);
+  } catch (error) {
+    console.log("Bild-Upload Fehler:", error);
+    Alert.alert(
+      "Bild-Upload fehlgeschlagen",
+      error.message || "Das Bild konnte nicht hochgeladen werden."
+    );
+    return;
+  }
     const itemToSave = {
       id: editingId || Date.now().toString(),
       workshop_id: WORKSHOP_ID,
