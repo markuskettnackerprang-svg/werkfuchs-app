@@ -394,7 +394,13 @@ async function handlePickImage() {
             </View>
 
             {!!imageUri && (
-              <Image source={{ uri: imageUri }} style={styles.previewImage} />
+              <>
+                <Image source={{ uri: imageUri }} style={styles.previewImage} />
+
+                <TouchableOpacity style={styles.aiButton} onPress={handleAiSuggest}>
+                  <Text style={styles.aiButtonText}>🤖 Kategorie vorschlagen</Text>
+                </TouchableOpacity>
+              </>
             )}
               
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
