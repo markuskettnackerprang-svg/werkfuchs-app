@@ -14,6 +14,7 @@ import {
 } from "react-native";
 
 import { supabase } from "../services/supabaseClient";
+import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
 import { decode } from "base64-arraybuffer";
 
@@ -102,13 +103,118 @@ export default function InventoryScreen({
   const [shortLabel, setShortLabel] = useState("");
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
-
+  const [imageUri, setImageUri] = useState("");
+  
   const userCategories = userConfig?.categories || CATEGORY_SUGGESTIONS;
 
   useEffect(() => {
     loadItems();
   }, []);
 
+  async function handlePickImageFromGallery() {
+  try {
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permissionResult.granted) {
+      Alert.alert(
+        "Galerie gesperrt",
+        "Bitte erlaube den Zugriff auf deine Fotos."
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 0.7,
+    });
+
+    if (result.canceled) return;
+
+    const selectedUri = result.assets?.[0]?.uri;
+
+    if (!selectedUri) {
+      Alert.alert("Fehler", "Kein Bild ausgewählt.");
+      return;
+    }
+
+    setImageUri(selectedUri);
+  } catch (error) {
+    console.log("Galerie Fehler:", error);
+    Alert.alert("Fehler", "Galerie konnte nicht geöffnet werden.");
+  }
+}
+  async function handleTakePhoto() {
+  try {
+    const permissionResult =
+      await ImagePicker.requestCameraPermissionsAsync();
+
+    if (!permissionResult.granted) {
+      Alert.alert(
+        "Kamera gesperrt",
+        "Bitte erlaube den Kamerazugriff in der App."
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 0.7,
+    });
+
+    if (result.canceled) return;
+
+    const selectedUri = result.assets?.[0]?.uri;
+
+    if (!selectedUri) {
+      Alert.alert("Fehler", "Kein Foto erhalten.");
+      return;
+    }
+
+    setImageUri(selectedUri);
+  } catch (error) {
+    console.log("Kamera Fehler:", error);
+    Alert.alert("Fehler", "Kamera konnte nicht geöffnet werden.");
+  }
+}
+  async function uploadImageIfNeeded(uri) {
+    if (!uri) return "";
+
+    // Schon eine echte Web-URL? Dann nichts hochladen.
+    if (uri.startsWith("http")) {
+      return uri;
+    }
+
+    const fileExt = uri.split(".").pop() || "jpg";
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `${WORKSHOP_ID}/${fileName}`;
+
+    const base64 = await FileSystem.readAsStringAsync(uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+
+    const arrayBuffer = decode(base64);
+
+    const { error } = await supabase.storage
+      .from("item-images")
+      .upload(filePath, arrayBuffer, {
+        contentType: `image/${fileExt}`,
+        upsert: false,
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    const { data } = supabase.storage
+      .from("item-images")
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  }
+  
   async function loadItems() {
     try {
       setLoading(true);
@@ -176,7 +282,19 @@ export default function InventoryScreen({
       Alert.alert("Fast geschafft", "Kategorie fehlt noch.");
       return;
     }
+    
+    let uploadedImageUri = imageUri;
 
+  try {
+    uploadedImageUri = await uploadImageIfNeeded(imageUri);
+  } catch (error) {
+    console.log("Bild-Upload Fehler:", error);
+    Alert.alert(
+      "Bild-Upload fehlgeschlagen",
+      error.message || "Das Bild konnte nicht hochgeladen werden."
+    );
+    return;
+  }
     const itemToSave = {
       id: editingId || Date.now().toString(),
       workshop_id: WORKSHOP_ID,
@@ -185,7 +303,7 @@ export default function InventoryScreen({
       shortLabel: shortLabel.trim(),
       category: finalCategory,
       location: location.trim(),
-      image_uri: "",
+      image_uri: uploadedImageUri,
       updated_at: new Date().toISOString(),
     };
 
@@ -300,7 +418,27 @@ export default function InventoryScreen({
               value={name}
               onChangeText={setName}
             />
+                
+            <TouchableOpacity
+              onPress={handlePickImageFromGallery}
+              style={{ marginTop: 8 }}
+            >
+              <Text>📷 Bild aus Galerie auswählen</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleTakePhoto}
+              style={{ marginTop: 8 }}
+            >
+              <Text>📸 Foto aufnehmen</Text>
+            </TouchableOpacity>
 
+            {imageUri ? (
+              <Image
+                source={{ uri: imageUri }}
+                style={{ width: 120, height: 120, marginTop: 10 }}
+              />
+            ) : null}
+              
             <Text style={styles.label}>Kurzbezeichnung</Text>
             <TextInput
               style={styles.input}
@@ -474,7 +612,7 @@ const styles = StyleSheet.create({
   backButtonText: {
     color: "#1F2A37",
     fontSize: 18,
-    fontWeight: "700",
+    fontWeight: "690",
   },
 
   title: {
