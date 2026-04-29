@@ -177,7 +177,39 @@ export default function InventoryScreen({
     Alert.alert("Fehler", "Kamera konnte nicht geöffnet werden.");
   }
 }
+  async function uploadImageIfNeeded(uri) {
+    if (!uri) return "";
 
+    // Schon eine echte Web-URL? Dann nichts hochladen.
+    if (uri.startsWith("http")) {
+      return uri;
+    }
+
+    const fileExt = uri.split(".").pop() || "jpg";
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `${WORKSHOP_ID}/${fileName}`;
+
+    const response = await fetch(uri);
+    const blob = await response.blob();
+
+    const { error } = await supabase.storage
+      .from("item-images")
+      .upload(filePath, blob, {
+        contentType: `image/${fileExt}`,
+        upsert: false,
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    const { data } = supabase.storage
+      .from("item-images")
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  }
+  
   async function loadItems() {
     try {
       setLoading(true);
@@ -245,7 +277,8 @@ export default function InventoryScreen({
       Alert.alert("Fast geschafft", "Kategorie fehlt noch.");
       return;
     }
-
+    
+    const uploadedImageUri = await uploadImageIfNeeded(imageUri);
     const itemToSave = {
       id: editingId || Date.now().toString(),
       workshop_id: WORKSHOP_ID,
@@ -254,7 +287,7 @@ export default function InventoryScreen({
       shortLabel: shortLabel.trim(),
       category: finalCategory,
       location: location.trim(),
-      image_uri: imageUri,
+      image_uri: uploadedImageUri,
       updated_at: new Date().toISOString(),
     };
 
