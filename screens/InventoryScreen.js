@@ -335,11 +335,6 @@ export default function InventoryScreen({
               onChangeText={setName}
             />
                 
-            <TextInput
-              placeholder="Bild-URL (optional)"
-              value={imageUri}
-              onChangeText={setImageUri}
-            />
             <TouchableOpacity
               onPress={handlePickImageFromGallery}
               style={{ marginTop: 8 }}
