@@ -395,7 +395,9 @@ async function handlePickImage() {
 
             {!!imageUri && (
               <>
-                <Image source={{ uri: imageUri }} style={styles.previewImage} />
+                <Text style={styles.imageSelectedText}>
+                  Bild aufgenommen ✅
+                </Text>
 
                 <TouchableOpacity style={styles.aiButton} onPress={handleAiSuggest}>
                   <Text style={styles.aiButtonText}>🤖 Kategorie vorschlagen</Text>
@@ -761,5 +763,12 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     marginTop: 8,
     marginBottom: 16,
+  },
+
+  imageSelectedText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#166534",
+    marginBottom: 12,
   },
 });
