@@ -408,7 +408,9 @@ export default function InventoryScreen({
               </Text>
              )}
 
-             <Text>Bild: noch keines</Text>
+             <Text>
+              Bild: {item.image_uri ? "vorhanden" : "noch keines"}
+             </Text>
 
             {!!item.location && (
               <Text style={styles.metaText}>📍 {item.location}</Text>
