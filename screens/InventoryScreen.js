@@ -143,6 +143,41 @@ export default function InventoryScreen({
     Alert.alert("Fehler", "Galerie konnte nicht geöffnet werden.");
   }
 }
+  async function handleTakePhoto() {
+  try {
+    const permissionResult =
+      await ImagePicker.requestCameraPermissionsAsync();
+
+    if (!permissionResult.granted) {
+      Alert.alert(
+        "Kamera gesperrt",
+        "Bitte erlaube den Kamerazugriff in der App."
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 0.7,
+    });
+
+    if (result.canceled) return;
+
+    const selectedUri = result.assets?.[0]?.uri;
+
+    if (!selectedUri) {
+      Alert.alert("Fehler", "Kein Foto erhalten.");
+      return;
+    }
+
+    setImageUri(selectedUri);
+  } catch (error) {
+    console.log("Kamera Fehler:", error);
+    Alert.alert("Fehler", "Kamera konnte nicht geöffnet werden.");
+  }
+}
+
   async function loadItems() {
     try {
       setLoading(true);
@@ -340,6 +375,12 @@ export default function InventoryScreen({
               style={{ marginTop: 8 }}
             >
               <Text>📷 Bild aus Galerie auswählen</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleTakePhoto}
+              style={{ marginTop: 8 }}
+            >
+              <Text>📸 Foto aufnehmen</Text>
             </TouchableOpacity>
 
             {imageUri ? (
