@@ -239,7 +239,7 @@ export default function InventoryScreen({
     if (!q) return true;
 
     return (
-      (item.name || "").toLowerCase().includes(q) ||
+      ( || "").toLowerCase().includes(q) ||
       (item.shortLabel || "").toLowerCase().includes(q) ||
       (item.code || "").toLowerCase().includes(q) ||
       (item.category || "").toLowerCase().includes(q) ||
@@ -406,8 +406,9 @@ export default function InventoryScreen({
               <Text style={styles.metaText}>
                 {getCategoryIcon(item.category)} {item.category}
               </Text>
-              <Text>Bild: noch keines</Text>
-            )}
+             )}
+
+             <Text>Bild: noch keines</Text>
 
             {!!item.location && (
               <Text style={styles.metaText}>📍 {item.location}</Text>
