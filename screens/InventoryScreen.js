@@ -171,7 +171,7 @@ export default function InventoryScreen({
   }
 
   const result = await ImagePicker.launchCameraAsync({
-    allowsEditing: true,
+    allowsEditing: false,
     quality: 0.7,
   });
 
@@ -189,7 +189,7 @@ async function handlePickImage() {
   }
 
   const result = await ImagePicker.launchImageLibraryAsync({
-    allowsEditing: true,
+    allowsEditing: false,
     quality: 0.7,
   });
 
