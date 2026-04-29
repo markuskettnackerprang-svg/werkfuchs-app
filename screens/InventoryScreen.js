@@ -269,9 +269,9 @@ export default function InventoryScreen({
             <Text style={styles.backButtonText}>← Zurück</Text>
           </TouchableOpacity>
 
-          <Text style={styles.title}>
-            {editingId ? "Alles vernichten" : "Krieg"}
-          </Text>
+            <Text style={styles.title}>
+              {editingId ? "Fund bearbeiten" : "Neuer Fund"}
+            </Text>
 
           <View style={styles.formCard}>
             <Text style={styles.label}>Code</Text>
