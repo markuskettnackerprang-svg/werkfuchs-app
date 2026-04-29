@@ -239,7 +239,7 @@ export default function InventoryScreen({
     if (!q) return true;
 
     return (
-      ( || "").toLowerCase().includes(q) ||
+      (item.name || "").toLowerCase().includes(q)
       (item.shortLabel || "").toLowerCase().includes(q) ||
       (item.code || "").toLowerCase().includes(q) ||
       (item.category || "").toLowerCase().includes(q) ||
