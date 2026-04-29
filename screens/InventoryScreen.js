@@ -346,6 +346,13 @@ export default function InventoryScreen({
             >
               <Text>📷 Bild aus Galerie auswählen</Text>
             </TouchableOpacity>
+
+            {imageUri ? (
+              <Image
+                source={{ uri: imageUri }}
+                style={{ width: 120, height: 120, marginTop: 10 }}
+              />
+            ) : null}
               
             <Text style={styles.label}>Kurzbezeichnung</Text>
             <TextInput
