@@ -9,10 +9,12 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  Image,
   View,
-} from "react-native";
+ } from "react-native";
 
 import { supabase } from "../services/supabaseClient";
+import * as ImagePicker from "expo-image-picker";
 
 const WORKSHOP_ID = "werkfuchs-privat";
 
@@ -99,7 +101,8 @@ export default function InventoryScreen({
   const [shortLabel, setShortLabel] = useState("");
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
-
+  const [imageUri, setImageUri] = useState("");
+  
   const userCategories = userConfig?.categories || CATEGORY_SUGGESTIONS;
 
   useEffect(() => {
@@ -159,7 +162,42 @@ export default function InventoryScreen({
     setLocation(item.location || "");
     setMode("form");
   }
+  async function handleTakePhoto() {
+  const permission = await ImagePicker.requestCameraPermissionsAsync();
 
+  if (!permission.granted) {
+    alert("Bitte erlaube den Zugriff auf die Kamera.");
+    return;
+  }
+
+  const result = await ImagePicker.launchCameraAsync({
+    allowsEditing: true,
+    quality: 0.7,
+  });
+
+  if (!result.canceled && result.assets?.length > 0) {
+    setImageUri(result.assets[0].uri);
+  }
+}
+
+async function handlePickImage() {
+  const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+  if (!permission.granted) {
+    alert("Bitte erlaube den Zugriff auf deine Galerie.");
+    return;
+  }
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    allowsEditing: true,
+    quality: 0.7,
+  });
+
+  if (!result.canceled && result.assets?.length > 0) {
+    setImageUri(result.assets[0].uri);
+  }
+}
+  
   async function handleSave() {
     const finalName = name.trim();
     const finalCategory = category.trim();
@@ -343,7 +381,22 @@ export default function InventoryScreen({
               value={location}
               onChangeText={setLocation}
             />
+            <Text style={styles.label}>Bild</Text>
 
+            <View style={styles.imageButtonRow}>
+              <TouchableOpacity style={styles.secondaryButton} onPress={handleTakePhoto}>
+               <Text style={styles.secondaryButtonText}>📸 Kamera</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.secondaryButton} onPress={handlePickImage}>
+                <Text style={styles.secondaryButtonText}>🖼 Galerie</Text>
+              </TouchableOpacity>
+            </View>
+
+            {!!imageUri && (
+              <Image source={{ uri: imageUri }} style={styles.previewImage} />
+            )}
+              
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
               <Text style={styles.saveButtonText}>
                 {editingId ? "Änderungen speichern" : "Artikel anlegen"}
@@ -672,5 +725,35 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     color: "#1F2A37",
     backgroundColor: "transparent",
+  },
+
+  imageButtonRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 12,
+  },
+
+  secondaryButton: {
+    flex: 1,
+    backgroundColor: "#F3F4F6",
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+
+  secondaryButtonText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#1F2A37",
+  },
+
+  previewImage: {
+    width: "100%",
+    height: 220,
+    borderRadius: 14,
+    marginTop: 8,
+    marginBottom: 16,
   },
 });
