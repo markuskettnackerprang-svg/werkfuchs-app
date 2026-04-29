@@ -666,11 +666,11 @@ const styles = StyleSheet.create({
   },
 
   label: {
-  fontSize: 18,
-  fontWeight: "900",
-  marginTop: 16,
-  marginBottom: 8,
-  color: "red",
-  backgroundColor: "yellow",
-},
+    fontSize: 14,
+    fontWeight: "600",
+    marginTop: 12,
+    marginBottom: 6,
+    color: "#1F2A37",
+    backgroundColor: "transparent",
+  },
 });
