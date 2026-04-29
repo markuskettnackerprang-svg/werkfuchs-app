@@ -189,8 +189,18 @@ export default function InventoryScreen({
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `${WORKSHOP_ID}/${fileName}`;
 
-    const response = await fetch(uri);
-    const blob = await response.blob();
+    const blob = await new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.onload = function () {
+        resolve(xhr.response);
+      };
+      xhr.onerror = function () {
+        reject(new Error("Bilddatei konnte nicht gelesen werden."));
+      };
+      xhr.responseType = "blob";
+      xhr.open("GET", uri, true);
+      xhr.send(null);
+    });
 
     const { error } = await supabase.storage
       .from("item-images")
