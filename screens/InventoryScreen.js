@@ -14,6 +14,7 @@ import {
 } from "react-native";
 
 import { supabase } from "../services/supabaseClient";
+import * as ImagePicker from "expo-image-picker";
 
 const WORKSHOP_ID = "werkfuchs-privat";
 
@@ -108,6 +109,40 @@ export default function InventoryScreen({
     loadItems();
   }, []);
 
+  async function handlePickImageFromGallery() {
+  try {
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permissionResult.granted) {
+      Alert.alert(
+        "Galerie gesperrt",
+        "Bitte erlaube den Zugriff auf deine Fotos."
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      quality: 0.7,
+    });
+
+    if (result.canceled) return;
+
+    const selectedUri = result.assets?.[0]?.uri;
+
+    if (!selectedUri) {
+      Alert.alert("Fehler", "Kein Bild ausgewählt.");
+      return;
+    }
+
+    setImageUri(selectedUri);
+  } catch (error) {
+    console.log("Galerie Fehler:", error);
+    Alert.alert("Fehler", "Galerie konnte nicht geöffnet werden.");
+  }
+}
   async function loadItems() {
     try {
       setLoading(true);
@@ -305,7 +340,13 @@ export default function InventoryScreen({
               value={imageUri}
               onChangeText={setImageUri}
             />
-                
+            <TouchableOpacity
+              onPress={handlePickImageFromGallery}
+              style={{ marginTop: 8 }}
+            >
+              <Text>📷 Bild aus Galerie auswählen</Text>
+            </TouchableOpacity>
+              
             <Text style={styles.label}>Kurzbezeichnung</Text>
             <TextInput
               style={styles.input}
