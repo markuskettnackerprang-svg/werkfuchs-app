@@ -495,7 +495,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginBottom: 10,
     fontSize: 16,
-    color: "#1F2A37",
+    color: "#000000",
   },
 
   codePreview: {
@@ -670,6 +670,6 @@ const styles = StyleSheet.create({
   fontWeight: "600",
   marginTop: 12,
   marginBottom: 4,
-  color: "#374151",
+  color: "#000000",
 },
 });
