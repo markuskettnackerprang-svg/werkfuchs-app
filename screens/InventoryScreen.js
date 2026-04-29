@@ -10,6 +10,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Image,
 } from "react-native";
 
 import { supabase } from "../services/supabaseClient";
@@ -406,13 +407,18 @@ export default function InventoryScreen({
               Bild: {item.image_uri ? "vorhanden" : "noch keines"}
             </Text>
 
+            {item.image_uri && (
+              <Image
+                source={{ uri: item.image_uri }}
+                style={{ width: 100, height: 100, marginTop: 8 }}
+              />
+            )}
+
             {!!item.category && (
               <Text style={styles.metaText}>
                 {getCategoryIcon(item.category)} {item.category}
               </Text>
              )}
-
-             
 
             {!!item.location && (
               <Text style={styles.metaText}>📍 {item.location}</Text>
