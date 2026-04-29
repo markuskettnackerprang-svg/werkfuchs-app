@@ -14,6 +14,8 @@ import {
 } from "react-native";
 
 import { supabase } from "../services/supabaseClient";
+import * as FileSystem from "expo-file-system";
+import { decode } from "base64-arraybuffer";
 
 const WORKSHOP_ID = "werkfuchs-privat";
 
