@@ -279,22 +279,35 @@ export default function InventoryScreen({
     return;
   }
 
-  const { data, error } = await supabase.functions.invoke("analyze-item-image", {
-    body: {
-      image_uri: imageUri,
-    },
-  });
+  try {
+    const { data, error } = await supabase.functions.invoke("analyze-item-image", {
+      body: {
+        image_uri: imageUri,
+      },
+    });
 
-  if (error) {
-    console.log("KI Fehler:", error);
-    Alert.alert("Fehler", "KI konnte nicht aufgerufen werden.");
-    return;
+    console.log("KI data:", data);
+    console.log("KI error:", error);
+
+    if (error) {
+      Alert.alert(
+        "KI Fehler",
+        error.message || JSON.stringify(error)
+      );
+      return;
+    }
+
+    Alert.alert(
+      "KI Antwort",
+      data?.message || "Keine Antwort erhalten."
+    );
+  } catch (error) {
+    console.log("KI Catch Fehler:", error);
+    Alert.alert(
+      "KI Catch Fehler",
+      error.message || "Unbekannter Fehler"
+    );
   }
-
-  Alert.alert(
-    "KI Antwort",
-    data?.message || "Keine Antwort erhalten."
-  );
 }
   async function handleSave() {
     const finalName = name.trim();
