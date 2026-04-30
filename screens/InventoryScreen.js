@@ -421,18 +421,21 @@ export default function InventoryScreen({
               onChangeText={setName}
             />
                 
-            <TouchableOpacity
-              onPress={handlePickImageFromGallery}
-              style={{ marginTop: 8 }}
-            >
-              <Text>📷 Bild aus Galerie auswählen</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleTakePhoto}
-              style={{ marginTop: 8 }}
-            >
-              <Text>📸 Foto aufnehmen</Text>
-            </TouchableOpacity>
+            <View style={styles.imageButtonRow}>
+              <TouchableOpacity
+                onPress={handlePickImageFromGallery}
+                style={styles.imageButton}
+              >
+                <Text style={styles.imageButtonText}>🖼 Galerie</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleTakePhoto}
+                style={styles.imageButton}
+              >
+                <Text style={styles.imageButtonText}>📸 Kamera</Text>
+              </TouchableOpacity>
+            </View>
 
             {imageUri ? (
               <Image
@@ -827,4 +830,25 @@ const styles = StyleSheet.create({
     color: "#1F2A37",
     backgroundColor: "transparent",
   },
+
+  imageButtonRow: {
+  flexDirection: "row",
+  gap: 10,
+  marginTop: 8,
+  marginBottom: 10,
+},
+
+imageButton: {
+  flex: 1,
+  backgroundColor: "#1B2A3A",
+  paddingVertical: 12,
+  borderRadius: 12,
+  alignItems: "center",
+},
+
+imageButtonText: {
+  color: "#FFFFFF",
+  fontWeight: "700",
+  fontSize: 14,
+},
 });
