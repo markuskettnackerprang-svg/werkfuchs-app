@@ -34,7 +34,7 @@ Deno.serve(async (req: Request) => {
               {
                 type: "input_text",
                 text:
-                  "Analysiere dieses Werkstatt-/Inventarbild. Antworte ausschließlich als JSON mit diesen Feldern: name, shortLabel, category, location. Keine Erklärung. category soll eine sinnvolle Heimwerker-Kategorie sein, z.B. Schrauben, Dübel, Werkzeug, Elektro, Holz, Farbe, Kleinteile, Maschine, Zubehör. location nur ausfüllen, wenn es aus dem Bild klar erkennbar ist, sonst leer lassen.",
+                  "Analysiere dieses Werkstattbild. Antworte ausschließlich als gültiges JSON. Kein Text davor oder danach. Format:\n\n{\n  \"name\": \"...\",\n  \"shortLabel\": \"...\",\n  \"category\": \"...\",\n  \"location\": \"...\"\n}\n\nKeine Erklärung. Nur JSON.",
               },
               {
                 type: "input_image",
