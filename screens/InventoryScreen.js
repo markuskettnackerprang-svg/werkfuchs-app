@@ -270,7 +270,20 @@ export default function InventoryScreen({
     setImageUri(item.image_uri || "");
     setMode("form");
   }
+  function handleAnalyzeImageWithAI() {
+    if (!imageUri) {
+      Alert.alert(
+        "Kein Bild vorhanden",
+        "Bitte wähle zuerst ein Bild aus oder mache ein Foto."
+      );
+      return;
+    }
 
+    Alert.alert(
+      "KI-Vorbereitung",
+      "Hier wird später die KI-Analyse des Bildes gestartet."
+    );
+}
   async function handleSave() {
     const finalName = name.trim();
     const finalCategory = category.trim();
@@ -436,6 +449,13 @@ export default function InventoryScreen({
                 <Text style={styles.imageButtonText}>📸 Kamera</Text>
               </TouchableOpacity>
             </View>
+            
+            <TouchableOpacity
+              style={styles.aiButton}
+              onPress={handleAnalyzeImageWithAI}
+            >
+              <Text style={styles.aiButtonText}>🤖 Bild mit KI analysieren</Text>
+            </TouchableOpacity>
 
             {imageUri ? (
               <Image
@@ -850,5 +870,23 @@ imageButtonText: {
   color: "#FFFFFF",
   fontWeight: "700",
   fontSize: 14,
+},
+
+aiButton: {
+  backgroundColor: "#111827",
+  borderRadius: 12,
+  paddingVertical: 14,
+  paddingHorizontal: 16,
+  marginTop: 12,
+  marginBottom: 8,
+  alignItems: "center",
+  borderWidth: 1,
+  borderColor: "#374151",
+},
+
+aiButtonText: {
+  color: "#ffffff",
+  fontSize: 15,
+  fontWeight: "700",
 },
 });
