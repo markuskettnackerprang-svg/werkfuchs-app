@@ -278,11 +278,11 @@ export default function InventoryScreen({
     );
     return;
   }
-
+    const uploadedImageUri = await uploadImageIfNeeded(imageUri);
   try {
     const { data, error } = await supabase.functions.invoke("analyze-item-image", {
       body: {
-        image_uri: imageUri,
+        image_uri: uploadedImageUri,
       },
     });
 
