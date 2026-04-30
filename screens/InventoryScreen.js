@@ -297,10 +297,16 @@ export default function InventoryScreen({
       return;
     }
 
-    Alert.alert(
-      "KI Antwort",
-      data?.message || "Keine Antwort erhalten."
-    );
+    if (data?.name) setName(data.name);
+    if (data?.shortLabel) setShortLabel(data.shortLabel);
+    if (data?.category) setCategory(data.category);
+    if (data?.location) setLocation(data.location);
+
+  Alert.alert(
+    "KI Antwort übernommen",
+    data?.message || "Die KI-Daten wurden ins Formular eingetragen."
+  );
+  
   } catch (error) {
     console.log("KI Catch Fehler:", error);
     Alert.alert(
