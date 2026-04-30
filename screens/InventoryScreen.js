@@ -270,19 +270,31 @@ export default function InventoryScreen({
     setImageUri(item.image_uri || "");
     setMode("form");
   }
-  function handleAnalyzeImageWithAI() {
-    if (!imageUri) {
-      Alert.alert(
-        "Kein Bild vorhanden",
-        "Bitte wähle zuerst ein Bild aus oder mache ein Foto."
-      );
-      return;
-    }
-
+  async function handleAnalyzeImageWithAI() {
+  if (!imageUri) {
     Alert.alert(
-      "KI-Vorbereitung",
-      "Hier wird später die KI-Analyse des Bildes gestartet."
+      "Kein Bild vorhanden",
+      "Bitte wähle zuerst ein Bild aus oder mache ein Foto."
     );
+    return;
+  }
+
+  const { data, error } = await supabase.functions.invoke("analyze-item-image", {
+    body: {
+      image_uri: imageUri,
+    },
+  });
+
+  if (error) {
+    console.log("KI Fehler:", error);
+    Alert.alert("Fehler", "KI konnte nicht aufgerufen werden.");
+    return;
+  }
+
+  Alert.alert(
+    "KI Antwort",
+    data?.message || "Keine Antwort erhalten."
+  );
 }
   async function handleSave() {
     const finalName = name.trim();
