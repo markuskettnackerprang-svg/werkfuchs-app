@@ -192,7 +192,7 @@ export default function InventoryScreen({
     const filePath = `${WORKSHOP_ID}/${fileName}`;
 
     const base64 = await FileSystem.readAsStringAsync(uri, {
-      encoding: FileSystem.EncodingType.Base64,
+      encoding: "base64",
     });
 
     const arrayBuffer = decode(base64);
