@@ -302,11 +302,9 @@ export default function InventoryScreen({
     if (data?.category) setCategory(data.category);
     if (data?.location) setLocation(data.location);
 
-    console.log("KI ROHDATEN:", data);
-
     Alert.alert(
-      "KI Rohdaten",
-      JSON.stringify(data, null, 2)
+      "KI übernommen",
+      data?.message || "Die KI-Daten wurden ins Formular eingetragen."
     );
   
   } catch (error) {
