@@ -1,24 +1,19 @@
 Deno.serve(async (req: Request) => {
-  const body = await req.json().catch(() => ({}));
+  const apiKey = Deno.env.get("OPENAI_API_KEY");
 
-  console.log("Analyze body:", body);
-
-  const imageUri = body?.image_uri || body?.imageUri || "";
+  if (!apiKey) {
+    return new Response(
+      JSON.stringify({
+        error: "OPENAI_API_KEY fehlt oder falsch benannt",
+      }),
+      { status: 500 }
+    );
+  }
 
   return new Response(
     JSON.stringify({
-      name: "KI-Testartikel",
-      shortLabel: "KI-Test",
-      category: "Test",
-      location: "",
-      receivedImageUri: imageUri,
-      message: imageUri
-        ? "Edge Function funktioniert. Bild-URI wurde empfangen."
-        : "Edge Function funktioniert, aber keine Bild-URI empfangen.",
+      message: "Key vorhanden – bereit für KI",
     }),
-    {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    }
+    { status: 200 }
   );
 });
