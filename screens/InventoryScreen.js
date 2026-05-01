@@ -570,6 +570,18 @@ async function handleImportBackupInventory() {
                   Vorschläge übernehmen
                 </Text>
               </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setAiSuggestion(null)}
+                style={{
+                  marginTop: 8,
+                  padding: 8,
+                }}
+              >
+                <Text style={{ textAlign: "center", color: "#666" }}>
+                  Vorschlag verwerfen
+                </Text>
+              </TouchableOpacity>
             </View>
           )}
 
