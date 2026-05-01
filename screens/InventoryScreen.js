@@ -13,6 +13,7 @@ import {
   Image,
 } from "react-native";
 
+import inventoryData from "../data/inventoryData.markus.backup";
 import { supabase } from "../services/supabaseClient";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system/legacy";
