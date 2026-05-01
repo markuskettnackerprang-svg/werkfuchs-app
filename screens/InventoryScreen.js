@@ -339,6 +339,33 @@ function handleApplyAiSuggestion() {
     "Die KI-Vorschläge wurden ins Formular eingetragen."
   );
 }
+async function handleImportBackupInventory() {
+  const itemsToImport = inventoryData.map((item) => ({
+    ...item,
+    id: `backup-${item.id}`,
+    workshop_id: WORKSHOP_ID,
+    image_uri: item.image_uri || "",
+    updated_at: new Date().toISOString(),
+  }));
+
+  const { data, error } = await supabase
+    .from("items")
+    .upsert(itemsToImport)
+    .select();
+
+  if (error) {
+    console.log("Backup Import Fehler:", error);
+    Alert.alert("Import fehlgeschlagen", error.message || "Unbekannter Fehler");
+    return;
+  }
+
+  Alert.alert(
+    "Import abgeschlossen",
+    `${data?.length || 0} Artikel wurden importiert.`
+  );
+
+  loadItems();
+}
 
   async function handleSave() {
     const finalName = name.trim();
