@@ -539,7 +539,32 @@ async function handleImportBackupInventory() {
             >
               <Text style={styles.aiButtonText}>🤖 Bild mit KI analysieren</Text>
             </TouchableOpacity>
+          {aiSuggestion && (
+            <View style={{ padding: 10, backgroundColor: "#eef6ff", marginTop: 10, marginBottom: 10, borderRadius: 8 }}>
+              <Text style={{ fontWeight: "bold", marginBottom: 5 }}>
+                🤖 KI-Vorschlag
+              </Text>
 
+              <Text>Bezeichnung: {aiSuggestion.name || "-"}</Text>
+              <Text>Kurz: {aiSuggestion.shortLabel || "-"}</Text>
+              <Text>Kategorie: {aiSuggestion.category || "-"}</Text>
+              <Text>Lagerort: {aiSuggestion.location || "-"}</Text>
+
+              <TouchableOpacity
+                onPress={handleApplyAiSuggestion}
+                style={{
+                  marginTop: 10,
+                  padding: 10,
+                  backgroundColor: "#4CAF50",
+                  borderRadius: 6,
+                }}
+              >
+                <Text style={{ color: "#fff", textAlign: "center" }}>
+                  Vorschläge übernehmen
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
             {imageUri ? (
               <Image
                 source={{ uri: imageUri }}
@@ -592,32 +617,6 @@ async function handleImportBackupInventory() {
               value={location}
               onChangeText={setLocation}
             />
-            {aiSuggestion && (
-              <View style={{ padding: 10, backgroundColor: "#eef6ff", marginBottom: 10, borderRadius: 8 }}>
-                <Text style={{ fontWeight: "bold", marginBottom: 5 }}>
-                  🤖 KI-Vorschlag
-                </Text>
-
-                {aiSuggestion.name ? <Text>Bezeichnung: {aiSuggestion.name}</Text> : null}
-                {aiSuggestion.shortLabel ? <Text>Kurz: {aiSuggestion.shortLabel}</Text> : null}
-                {aiSuggestion.category ? <Text>Kategorie: {aiSuggestion.category}</Text> : null}
-                {aiSuggestion.location ? <Text>Lagerort: {aiSuggestion.location}</Text> : null}
-
-                <TouchableOpacity
-                  onPress={handleApplyAiSuggestion}
-                  style={{
-                    marginTop: 10,
-                    padding: 10,
-                    backgroundColor: "#4CAF50",
-                    borderRadius: 6,
-                  }}
-                >
-                  <Text style={{ color: "#fff", textAlign: "center" }}>
-                    Vorschläge übernehmen
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
             
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
               <Text style={styles.saveButtonText}>
