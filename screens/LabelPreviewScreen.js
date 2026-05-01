@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Alert,
   ScrollView,
+  Platform,
 } from "react-native";
 import { buildLabelsHtml } from "../utils/buildLabelsHtml";
 import { printLabels, exportLabelsPdf } from "../services/printLabels";
