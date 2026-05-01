@@ -632,6 +632,13 @@ async function handleImportBackupInventory() {
               <TouchableOpacity style={styles.secondaryButton} onPress={onOpenScanner}>
                 <Text style={styles.secondaryButtonText}>📷 Scanner</Text>
               </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                onPress={handleImportBackupInventory}
+            >
+                <Text style={styles.secondaryButtonText}>📦 Backup importieren</Text>
+              </TouchableOpacity>
             </View>
 
             <TextInput
