@@ -105,6 +105,7 @@ export default function InventoryScreen({
   const [name, setName] = useState("");
   const [shortLabel, setShortLabel] = useState("");
   const [category, setCategory] = useState("");
+  const [selectedInventoryCategory, setSelectedInventoryCategory] = useState("");
   const [location, setLocation] = useState("");
   const [imageUri, setImageUri] = useState("");
   const [aiSuggestion, setAiSuggestion] = useState(null);
@@ -457,10 +458,15 @@ async function handleImportBackupInventory() {
 
     setItems((prev) => prev.filter((item) => item.id !== id));
   }
-
+  const inventoryCategories = [
+    ...new Set(items.map((item) => item.category).filter(Boolean)),
+  ];
   const filteredItems = items.filter((item) => {
     const q = searchText.toLowerCase().trim();
 
+    if (selectedInventoryCategory && item.category !== selectedInventoryCategory) {
+      return false;
+    }
     if (!q) return true;
 
     return (
@@ -701,7 +707,49 @@ async function handleImportBackupInventory() {
                 </TouchableOpacity>
               )}
             </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ marginBottom: 10 }}
+            >
+              <TouchableOpacity
+                style={[
+                  styles.suggestionChip,
+                  !selectedInventoryCategory && styles.suggestionChipActive,
+                ]}
+                onPress={() => setSelectedInventoryCategory("")}
+              >
+                <Text
+                  style={[
+                    styles.suggestionChipText,
+                    !selectedInventoryCategory && styles.suggestionChipTextActive,
+                  ]}
+                >
+                  Alle
+                </Text>
+              </TouchableOpacity>
 
+              {inventoryCategories.map((cat) => (
+                <TouchableOpacity
+                  key={cat}
+                  style={[
+                    styles.suggestionChip,
+                    selectedInventoryCategory === cat && styles.suggestionChipActive,
+                  ]}
+                  onPress={() => setSelectedInventoryCategory(cat)}
+                >
+                  <Text
+                    style={[
+                      styles.suggestionChipText,
+                      selectedInventoryCategory === cat && styles.suggestionChipTextActive,
+                    ]}
+                  >
+                    {getCategoryIcon(cat)} {cat}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            
             <Text style={styles.resultsText}>
               {loading ? "Lade Inventar..." : `${filteredItems.length} Funde`}
             </Text>
