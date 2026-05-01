@@ -16,6 +16,7 @@ export default function App() {
   const [isReady, setIsReady] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [userConfig, setUserConfig] = useState(null);
+  const [labelItems, setLabelItems] = useState([]);
 
   useEffect(() => {
     async function loadConfig() {
@@ -62,7 +63,7 @@ export default function App() {
   if (currentScreen === "labels") {
     return (
       <LabelPreviewScreen
-        items={inventoryData}
+        items={labelItems}
         onBack={() => setCurrentScreen("inventory")}
       />
     );
@@ -91,6 +92,7 @@ export default function App() {
         onGoHome={() => setCurrentScreen("home")}
         onOpenLabelPreview={() => setCurrentScreen("labels")}
         onOpenScanner={() => setCurrentScreen("scanner")}
+        onItemsLoaded={setLabelItems}
         startMode="browse"
         userConfig={userConfig}
       />
@@ -103,6 +105,7 @@ export default function App() {
         onGoHome={() => setCurrentScreen("home")}
         onOpenLabelPreview={() => setCurrentScreen("labels")}
         onOpenScanner={() => setCurrentScreen("scanner")}
+        onItemsLoaded={setLabelItems}
         startMode="create"
         userConfig={userConfig}
       />

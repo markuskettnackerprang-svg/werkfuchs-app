@@ -90,9 +90,11 @@ export default function InventoryScreen({
   onGoHome,
   onOpenLabelPreview,
   onOpenScanner,
+  onItemsLoaded,
   startMode = "browse",
   userConfig,
 }) {
+
   const [mode, setMode] = useState(startMode === "create" ? "form" : "list");
   const [items, setItems] = useState([]);
   const [searchText, setSearchText] = useState("");
@@ -234,12 +236,16 @@ export default function InventoryScreen({
         return;
       }
 
-      setItems(
-        (data || []).map((item) => ({
-          ...item,
-          imageUri: item.image_uri,
-        }))
-      );
+      const loadedItems = (data || []).map((item) => ({
+        ...item,
+        imageUri: item.image_uri,
+      }));
+
+      setItems(loadedItems);
+
+      if (onItemsLoaded) {
+        onItemsLoaded(loadedItems);
+      }
     } catch (e) {
       console.log("Laden fehlgeschlagen:", e);
       Alert.alert("Fehler", "Inventar konnte nicht geladen werden.");
