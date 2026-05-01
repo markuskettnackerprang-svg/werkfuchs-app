@@ -539,6 +539,7 @@ async function handleImportBackupInventory() {
             >
               <Text style={styles.aiButtonText}>🤖 Bild mit KI analysieren</Text>
             </TouchableOpacity>
+
           {aiSuggestion && (
             <View style={{ padding: 10, backgroundColor: "#eef6ff", marginTop: 10, marginBottom: 10, borderRadius: 8 }}>
               <Text style={{ fontWeight: "bold", marginBottom: 5 }}>
@@ -565,6 +566,7 @@ async function handleImportBackupInventory() {
               </TouchableOpacity>
             </View>
           )}
+
             {imageUri ? (
               <Image
                 source={{ uri: imageUri }}
