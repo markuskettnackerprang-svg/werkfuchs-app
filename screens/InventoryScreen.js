@@ -749,7 +749,7 @@ async function handleImportBackupInventory() {
                 </TouchableOpacity>
               ))}
             </ScrollView>
-            
+
             <Text style={styles.resultsText}>
               {loading ? "Lade Inventar..." : `${filteredItems.length} Funde`}
             </Text>
