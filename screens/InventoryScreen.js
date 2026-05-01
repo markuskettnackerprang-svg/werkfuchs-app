@@ -104,8 +104,10 @@ export default function InventoryScreen({
   const [category, setCategory] = useState("");
   const [location, setLocation] = useState("");
   const [imageUri, setImageUri] = useState("");
-  
+  const [aiSuggestion, setAiSuggestion] = useState(null);
+
   const userCategories = userConfig?.categories || CATEGORY_SUGGESTIONS;
+  
 
   useEffect(() => {
     loadItems();
@@ -253,6 +255,7 @@ export default function InventoryScreen({
     setCategory("");
     setLocation("");
     setImageUri("");
+    setAiSuggestion(null);
   }
 
   function openCreateForm() {
@@ -278,7 +281,9 @@ export default function InventoryScreen({
     );
     return;
   }
-    const uploadedImageUri = await uploadImageIfNeeded(imageUri);
+
+  const uploadedImageUri = await uploadImageIfNeeded(imageUri);
+
   try {
     const { data, error } = await supabase.functions.invoke("analyze-item-image", {
       body: {
@@ -297,16 +302,19 @@ export default function InventoryScreen({
       return;
     }
 
-    if (data?.name) setName(data.name);
-    if (data?.shortLabel) setShortLabel(data.shortLabel);
-    if (data?.category) setCategory(data.category);
-    if (data?.location) setLocation(data.location);
+    setAiSuggestion({
+      name: data?.name || "",
+      shortLabel: data?.shortLabel || "",
+      category: data?.category || "",
+      location: data?.location || "",
+      message: data?.message || "",
+    });
 
     Alert.alert(
-      "KI übernommen",
-      data?.message || "Die KI-Daten wurden ins Formular eingetragen."
+      "KI-Vorschlag erstellt",
+      "Die KI-Vorschläge wurden erkannt. Du kannst sie jetzt prüfen und übernehmen."
     );
-  
+
   } catch (error) {
     console.log("KI Catch Fehler:", error);
     Alert.alert(
@@ -315,6 +323,22 @@ export default function InventoryScreen({
     );
   }
 }
+function handleApplyAiSuggestion() {
+  if (!aiSuggestion) return;
+
+  if (aiSuggestion.name) setName(aiSuggestion.name);
+  if (aiSuggestion.shortLabel) setShortLabel(aiSuggestion.shortLabel);
+  if (aiSuggestion.category) setCategory(aiSuggestion.category);
+  if (aiSuggestion.location) setLocation(aiSuggestion.location);
+
+  setAiSuggestion(null);
+
+  Alert.alert(
+    "KI übernommen",
+    "Die KI-Vorschläge wurden ins Formular eingetragen."
+  );
+}
+
   async function handleSave() {
     const finalName = name.trim();
     const finalCategory = category.trim();
