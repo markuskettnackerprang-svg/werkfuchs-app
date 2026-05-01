@@ -228,7 +228,7 @@ export default function LabelPreviewScreen({ items = [], onBack }) {
         </Text>
       </TouchableOpacity>
 
-      {showQrPreview ? (
+            {showQrPreview ? (
         <View style={styles.qrPreviewArea}>
           <Text style={styles.qrPreviewTitle}>QR-Vorschau</Text>
 
@@ -273,23 +273,15 @@ export default function LabelPreviewScreen({ items = [], onBack }) {
           </ScrollView>
         </View>
       ) : (
-        <View style={styles.previewWrapper}>
-          {Platform.OS === "web" ? (
+        Platform.OS === "web" && (
+          <View style={styles.previewWrapper}>
             <iframe
               title="Etikettenvorschau"
               srcDoc={html}
               style={styles.iframe}
             />
-          ) : (
-            <View style={{ padding: 20 }}>
-              <Text style={{ textAlign: "center", color: "#6B7280" }}>
-                Etiketten-Vorschau ist im Web deaktiviert.
-                {"\n\n"}
-                Bitte auf dem Handy testen.
-              </Text>
-            </View>
-          )}
-        </View>
+          </View>
+        )
       )}
     </View>
   );
