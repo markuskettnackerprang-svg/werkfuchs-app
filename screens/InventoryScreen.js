@@ -679,12 +679,28 @@ async function handleImportBackupInventory() {
               </TouchableOpacity>
             </View>
 
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Fund suchen..."
-              value={searchText}
-              onChangeText={setSearchText}
-            />
+            <View style={{ position: "relative" }}>
+              <TextInput
+                style={[styles.searchInput, { paddingRight: 40 }]}
+                placeholder="Suchen..."
+                value={searchText}
+                onChangeText={setSearchText}
+              />
+
+              {searchText.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => setSearchText("")}
+                  style={{
+                    position: "absolute",
+                    right: 10,
+                    top: 10,
+                    padding: 5,
+                  }}
+                >
+                  <Text style={{ fontSize: 16, color: "#666" }}>✕</Text>
+                </TouchableOpacity>
+              )}
+            </View>
 
             <Text style={styles.resultsText}>
               {loading ? "Lade Inventar..." : `${filteredItems.length} Funde`}
