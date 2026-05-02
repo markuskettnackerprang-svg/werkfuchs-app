@@ -131,10 +131,25 @@ export default function InventoryScreen({
   );
 
   if (!foundItem) {
-    Alert.alert("Artikel nicht gefunden", cleanCode);
-    onScannedCodeHandled?.();
-    return;
-  }
+  Alert.alert(
+    "Neuer Artikel",
+    `Kein Artikel mit Code ${cleanCode} gefunden. Neuer Eintrag wird erstellt.`
+  );
+
+  setEditingId(null);
+  setCode(cleanCode);
+  setName("");
+  setShortLabel("");
+  setCategory("");
+  setLocation("");
+  setImageUri("");
+  setAiSuggestion(null);
+
+  setMode("form");
+
+  onScannedCodeHandled?.();
+  return;
+}
 
   setEditingId(foundItem.id);
   setCode(foundItem.code || "");
