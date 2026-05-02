@@ -6,6 +6,7 @@ import InventoryScreen from "./screens/InventoryScreen";
 import LabelPreviewScreen from "./screens/LabelPreviewScreen";
 import ScannerScreen from "./screens/ScannerScreen";
 import OnboardingScreen from "./screens/OnboardingScreen";
+import FeedbackScreen from "./screens/FeedbackScreen";
 
 import inventoryData from "./data/inventoryData";
 
@@ -111,6 +112,12 @@ export default function App() {
       />
     );
   }
-
+  if (currentScreen === "feedback") {
+  return (
+    <FeedbackScreen
+      onBack={() => setCurrentScreen("home")}
+    />
+  );
+}
   return <HomeScreen onNavigate={(screen) => setCurrentScreen(screen)} />;
 }

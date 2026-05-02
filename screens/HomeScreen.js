@@ -65,8 +65,8 @@ export default function HomeScreen({ onNavigate }) {
         style={styles.feedbackButton}
         onPress={() => onNavigate("feedback")}
       >
-        <Text style={styles.feedbackText}>
-          💬 Feedback geben
+        <Text style={styles.feedbackButtonText}>
+          🦊 Feedback geben
         </Text>
       </TouchableOpacity>
     </View>
@@ -215,15 +215,17 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     },
 
-    feedbackButton: {
-  marginTop: 20,
-  padding: 12,
-},
+  feedbackButton: {
+    backgroundColor: "#FF6B00",
+    paddingVertical: 18,
+    borderRadius: 16,
+    alignItems: "center",
+    marginTop: 20,
+  },
 
-feedbackText: {
-  color: "#6B7280",
-  fontSize: 14,
-  textAlign: "center",
-},
-
+  feedbackButtonText: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "800",
+  },
 });
