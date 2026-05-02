@@ -9,6 +9,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
   View,
   Image,
 } from "react-native";
@@ -281,7 +282,7 @@ export default function InventoryScreen({
     setImageUri(item.image_uri || "");
     setMode("form");
   }
-  async function handleAnalyzeImageWithAI() {
+async function handleAnalyzeImageWithAI() {
   if (!imageUri) {
     Alert.alert(
       "Kein Bild vorhanden",
@@ -290,9 +291,11 @@ export default function InventoryScreen({
     return;
   }
 
-  const uploadedImageUri = await uploadImageIfNeeded(imageUri);
+  setIsAnalyzing(true);
 
   try {
+    const uploadedImageUri = await uploadImageIfNeeded(imageUri);
+
     const { data, error } = await supabase.functions.invoke("analyze-item-image", {
       body: {
         image_uri: uploadedImageUri,
@@ -329,6 +332,8 @@ export default function InventoryScreen({
       "KI Catch Fehler",
       error.message || "Unbekannter Fehler"
     );
+  } finally {
+    setIsAnalyzing(false);
   }
 }
 function handleApplyAiSuggestion() {
@@ -552,44 +557,50 @@ async function handleImportBackupInventory() {
               <Text style={styles.aiButtonText}>🤖 Bild mit KI analysieren</Text>
             </TouchableOpacity>
 
-          {aiSuggestion && (
-            <View style={{ padding: 10, backgroundColor: "#eef6ff", marginTop: 10, marginBottom: 10, borderRadius: 8 }}>
-              <Text style={{ fontWeight: "bold", marginBottom: 5 }}>
-                🤖 KI-Vorschlag
+            {isAnalyzing && (
+              <Text style={{ marginTop: 8, fontStyle: "italic", color: "#666" }}>
+                🤖 KI analysiert das Bild...
               </Text>
+            )}
 
-              <Text>Bezeichnung: {aiSuggestion.name || "-"}</Text>
-              <Text>Kurz: {aiSuggestion.shortLabel || "-"}</Text>
-              <Text>Kategorie: {aiSuggestion.category || "-"}</Text>
-              <Text>Lagerort: {aiSuggestion.location || "-"}</Text>
-
-              <TouchableOpacity
-                onPress={handleApplyAiSuggestion}
-                style={{
-                  marginTop: 10,
-                  padding: 10,
-                  backgroundColor: "#4CAF50",
-                  borderRadius: 6,
-                }}
-              >
-                <Text style={{ color: "#fff", textAlign: "center" }}>
-                  Vorschläge übernehmen
+            {aiSuggestion && (
+              <View style={{ padding: 10, backgroundColor: "#eef6ff", marginTop: 10, marginBottom: 10, borderRadius: 8 }}>
+                <Text style={{ fontWeight: "bold", marginBottom: 5 }}>
+                  🤖 KI-Vorschlag
                 </Text>
-              </TouchableOpacity>
 
-              <TouchableOpacity
-                onPress={() => setAiSuggestion(null)}
-                style={{
-                  marginTop: 8,
-                  padding: 8,
-                }}
-              >
-                <Text style={{ textAlign: "center", color: "#666" }}>
-                  Vorschlag verwerfen
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
+                <Text>Bezeichnung: {aiSuggestion.name || "-"}</Text>
+                <Text>Kurz: {aiSuggestion.shortLabel || "-"}</Text>
+                <Text>Kategorie: {aiSuggestion.category || "-"}</Text>
+                <Text>Lagerort: {aiSuggestion.location || "-"}</Text>
+
+                <TouchableOpacity
+                  onPress={handleApplyAiSuggestion}
+                  style={{
+                    marginTop: 10,
+                    padding: 10,
+                    backgroundColor: "#4CAF50",
+                    borderRadius: 6,
+                  }}
+                >
+                  <Text style={{ color: "#fff", textAlign: "center" }}>
+                    Vorschläge übernehmen
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => setAiSuggestion(null)}
+                  style={{
+                    marginTop: 8,
+                    padding: 8,
+                  }}
+                >
+                  <Text style={{ textAlign: "center", color: "#666" }}>
+                    Vorschlag verwerfen
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
             {imageUri ? (
               <Image
