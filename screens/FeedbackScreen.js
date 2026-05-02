@@ -41,6 +41,7 @@ export default function FeedbackScreen({ onBack }) {
   const [problems, setProblems] = useState([]);
   const [nextFeature, setNextFeature] = useState("");
   const [comment, setComment] = useState("");
+  const [submitted, setSubmitted] = useState(false);
 
   function toggleValue(value, list, setList) {
     if (list.includes(value)) {
@@ -60,7 +61,7 @@ export default function FeedbackScreen({ onBack }) {
       comment,
     };
 
-    const { error } = await supabase.from("feedback").insert({
+    const { data, error } = await supabase.from("feedback").insert({
       workshop_id: "werkfuchs-privat",
       rating,
       good,
@@ -69,11 +70,16 @@ export default function FeedbackScreen({ onBack }) {
       comment,
     });
 
+    console.log("Feedback result:", data);
+    console.log("Feedback error:", error);
+
     if (error) {
+      Alert.alert("Fehler", JSON.stringify(error));
       throw error;
     }
 
     Alert.alert("Danke 🦊", "Feedback wurde gesendet!");
+    setSubmitted(true);
 
     // Reset
     setRating(0);
@@ -103,7 +109,14 @@ export default function FeedbackScreen({ onBack }) {
       <Text style={styles.subtitle}>
         Hilf dem Fuchs besser zu werden. Kurz klicken reicht. 🦊
       </Text>
-
+      {submitted && (
+      <View style={styles.successBox}>
+        <Text style={styles.successTitle}>Danke 🦊</Text>
+        <Text style={styles.successText}>
+          Dein Feedback wurde gespeichert.
+        </Text>
+      </View>
+    )}
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Wie findest du die App aktuell?</Text>
 
@@ -335,5 +348,26 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "800",
+  },
+
+  successBox: {
+    backgroundColor: "#ECFDF3",
+    borderColor: "#ABEFC6",
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 16,
+  },
+
+  successTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: "#067647",
+    marginBottom: 4,
+  },
+
+  successText: {
+    fontSize: 14,
+    color: "#067647",
   },
 });
