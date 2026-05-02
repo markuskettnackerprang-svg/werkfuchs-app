@@ -110,6 +110,7 @@ export default function InventoryScreen({
   const [location, setLocation] = useState("");
   const [imageUri, setImageUri] = useState("");
   const [aiSuggestion, setAiSuggestion] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const userCategories = userConfig?.categories || CATEGORY_SUGGESTIONS;
   
