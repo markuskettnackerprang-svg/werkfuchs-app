@@ -8,7 +8,7 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
-
+import { supabase } from "../services/supabaseClient";
 const GOOD_OPTIONS = [
   "Übersicht",
   "Suche",
@@ -60,20 +60,17 @@ export default function FeedbackScreen({ onBack }) {
       comment,
     };
 
-    const response = await fetch(
-      "https://werkfuchs-api.vercel.app/api/send-feedback",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(feedback),
-      }
-    );
+    const { error } = await supabase.from("feedback").insert({
+      workshop_id: "werkfuchs-privat",
+      rating,
+      good,
+      problems,
+      next_feature: nextFeature,
+      comment,
+    });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || "Fehler beim Senden");
+    if (error) {
+      throw error;
     }
 
     Alert.alert("Danke 🦊", "Feedback wurde gesendet!");
