@@ -88,6 +88,8 @@ function getCategoryIcon(category) {
 }
 
 export default function InventoryScreen({
+  scannedCode,
+  onScannedCodeHandled,
   onGoHome,
   onOpenLabelPreview,
   onOpenScanner,
@@ -113,11 +115,40 @@ export default function InventoryScreen({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const userCategories = userConfig?.categories || CATEGORY_SUGGESTIONS;
-  
 
   useEffect(() => {
     loadItems();
   }, []);
+
+  useEffect(() => {
+  if (!scannedCode) return;
+  if (!items || items.length === 0) return;
+
+  const cleanCode = String(scannedCode).trim();
+
+  const foundItem = items.find(
+    (item) => String(item.code || "").trim() === cleanCode
+  );
+
+  if (!foundItem) {
+    Alert.alert("Artikel nicht gefunden", cleanCode);
+    onScannedCodeHandled?.();
+    return;
+  }
+
+  setEditingId(foundItem.id);
+  setCode(foundItem.code || "");
+  setName(foundItem.name || "");
+  setShortLabel(foundItem.shortLabel || "");
+  setCategory(foundItem.category || "");
+  setLocation(foundItem.location || "");
+  setImageUri(foundItem.image_uri || "");
+  setAiSuggestion(null);
+
+  setMode("form");
+
+  onScannedCodeHandled?.();
+}, [scannedCode, items]);
 
   async function handlePickImageFromGallery() {
   try {
