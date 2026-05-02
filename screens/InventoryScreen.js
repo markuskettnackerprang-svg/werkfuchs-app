@@ -97,7 +97,8 @@ export default function InventoryScreen({
   startMode = "browse",
   userConfig,
 }) {
-
+  
+  const workshopId = userConfig?.workshopId || WORKSHOP_ID;
   const [mode, setMode] = useState(startMode === "create" ? "form" : "list");
   const [items, setItems] = useState([]);
   const [searchText, setSearchText] = useState("");
@@ -115,6 +116,7 @@ export default function InventoryScreen({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const userCategories = userConfig?.categories || CATEGORY_SUGGESTIONS;
+  const workshopId = userConfig?.workshopId || "workshopId";
 
   useEffect(() => {
     loadItems();
@@ -243,7 +245,7 @@ export default function InventoryScreen({
 
     const fileExt = uri.split(".").pop() || "jpg";
     const fileName = `${Date.now()}.${fileExt}`;
-    const filePath = `${WORKSHOP_ID}/${fileName}`;
+    const filePath = `${workshopId}/${fileName}`;
 
     const base64 = await FileSystem.readAsStringAsync(uri, {
       encoding: "base64",
@@ -276,7 +278,7 @@ export default function InventoryScreen({
       const { data, error } = await supabase
         .from("items")
         .select("*")
-        .eq("workshop_id", WORKSHOP_ID)
+        .eq("workshop_id", workshopId)
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -402,7 +404,7 @@ async function handleImportBackupInventory() {
   const itemsToImport = inventoryData.map((item) => ({
     ...item,
     id: `backup-${item.id}`,
-    workshop_id: WORKSHOP_ID,
+    workshop_id: workshopId,
     image_uri: item.image_uri || "",
     updated_at: new Date().toISOString(),
   }));
@@ -454,7 +456,7 @@ async function handleImportBackupInventory() {
   }
     const itemToSave = {
       id: editingId || Date.now().toString(),
-      workshop_id: WORKSHOP_ID,
+      workshop_id: workshopId,
       code: code.trim() || getNextCode(items, finalCategory),
       name: finalName,
       shortLabel: shortLabel.trim(),
@@ -500,7 +502,7 @@ async function handleImportBackupInventory() {
       .from("items")
       .delete()
       .eq("id", id)
-      .eq("workshop_id", WORKSHOP_ID);
+      .eq("workshop_id", workshopId);
 
     if (error) {
       console.log("Supabase Löschen Fehler:", error);
