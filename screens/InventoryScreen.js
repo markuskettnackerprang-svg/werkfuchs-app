@@ -551,10 +551,8 @@ async function handleImportBackupInventory() {
     );
   });
 
-  if (mode === "form") {
-    const previewCode = code.trim() || getNextCode(items, category);
-
-    if (editingId || isCreating) {
+if (mode === "form") {
+  const previewCode = code.trim() || getNextCode(items, category);
 
   const locationSuggestions = Array.from(
     new Set(
@@ -758,8 +756,7 @@ async function handleImportBackupInventory() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-      );
-    }
+    );
   }
   return (
     <View style={styles.container}>
