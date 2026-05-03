@@ -523,14 +523,14 @@ async function handleImportBackupInventory() {
             );
             return;
           }
+
+          setItems((prev) => prev.filter((item) => item.id !== id));
         },
       },
     ]
   );
 }
 
-    setItems((prev) => prev.filter((item) => item.id !== id));
-  }
   const inventoryCategories = [
     ...new Set(items.map((item) => item.category).filter(Boolean)),
   ];
