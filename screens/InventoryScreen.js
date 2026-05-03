@@ -98,7 +98,6 @@ export default function InventoryScreen({
   userConfig,
 }) {
   
-  const workshopId = userConfig?.workshopId || WORKSHOP_ID;
   const [mode, setMode] = useState(startMode === "create" ? "form" : "list");
   const [items, setItems] = useState([]);
   const [searchText, setSearchText] = useState("");
