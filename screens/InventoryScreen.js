@@ -496,18 +496,38 @@ async function handleImportBackupInventory() {
     Alert.alert("Gespeichert", "Der Artikel wurde in der Cloud gespeichert.");
   }
 
-  async function handleDelete(id) {
-    const { error } = await supabase
-      .from("items")
-      .delete()
-      .eq("id", id)
-      .eq("workshop_id", workshopId);
+  function handleDelete(id) {
+  Alert.alert(
+    "Wirklich löschen?",
+    "Dieser Artikel wird dauerhaft gelöscht.",
+    [
+      {
+        text: "Abbrechen",
+        style: "cancel",
+      },
+      {
+        text: "Löschen",
+        style: "destructive",
+        onPress: async () => {
+          const { error } = await supabase
+            .from("items")
+            .delete()
+            .eq("id", id)
+            .eq("workshop_id", workshopId);
 
-    if (error) {
-      console.log("Supabase Löschen Fehler:", error);
-      Alert.alert("Fehler", error.message || "Löschen fehlgeschlagen.");
-      return;
-    }
+          if (error) {
+            console.log("Supabase Löschen Fehler:", error);
+            Alert.alert(
+              "Fehler",
+              error.message || "Löschen fehlgeschlagen."
+            );
+            return;
+          }
+        },
+      },
+    ]
+  );
+}
 
     setItems((prev) => prev.filter((item) => item.id !== id));
   }
