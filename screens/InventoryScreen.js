@@ -554,8 +554,23 @@ async function handleImportBackupInventory() {
   if (mode === "form") {
     const previewCode = code.trim() || getNextCode(items, category);
 
-    return (
-      <KeyboardAvoidingView
+    if (editingId || isCreating) {
+
+  const locationSuggestions = Array.from(
+    new Set(
+      items
+        .map((item) => item.location)
+        .filter((loc) => loc && loc.trim() !== "")
+    )
+  )
+    .filter((loc) =>
+      loc.toLowerCase().includes(location.toLowerCase())
+    )
+    .filter((loc) => loc !== location)
+    .slice(0, 5);
+
+  return (
+    <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
@@ -722,7 +737,19 @@ async function handleImportBackupInventory() {
               value={location}
               onChangeText={setLocation}
             />
-            
+            {location.length > 0 && locationSuggestions.length > 0 && (
+              <View style={styles.suggestionBox}>
+                {locationSuggestions.map((suggestion) => (
+                  <TouchableOpacity
+                    key={suggestion}
+                    style={styles.suggestionItem}
+                    onPress={() => setLocation(suggestion)}
+                  >
+                    <Text style={styles.suggestionText}>{suggestion}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
               <Text style={styles.saveButtonText}>
                 {editingId ? "Änderungen speichern" : "Artikel anlegen"}
@@ -731,9 +758,9 @@ async function handleImportBackupInventory() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    );
+      );
+    }
   }
-
   return (
     <View style={styles.container}>
       <FlatList
@@ -1159,5 +1186,27 @@ aiButtonText: {
   color: "#ffffff",
   fontSize: 15,
   fontWeight: "700",
+},
+
+suggestionBox: {
+  backgroundColor: "#ffffff",
+  borderWidth: 1,
+  borderColor: "#ddd",
+  borderRadius: 8,
+  marginTop: 4,
+  marginBottom: 8,
+  overflow: "hidden",
+},
+
+suggestionItem: {
+  paddingVertical: 10,
+  paddingHorizontal: 12,
+  borderBottomWidth: 1,
+  borderBottomColor: "#eee",
+},
+
+suggestionText: {
+  fontSize: 15,
+  color: "#333",
 },
 });
