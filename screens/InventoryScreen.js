@@ -115,7 +115,7 @@ export default function InventoryScreen({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const userCategories = userConfig?.categories || CATEGORY_SUGGESTIONS;
-  const workshopId = userConfig?.workshopId || "workshopId";
+  const workshopId = userConfig?.workshopId || WORKSHOP_ID;
 
   useEffect(() => {
     loadItems();
