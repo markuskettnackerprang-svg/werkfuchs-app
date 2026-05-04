@@ -800,8 +800,10 @@ const locationSuggestions = allLocations
               <Text style={styles.primaryButtonText}>＋ Neuer Fund</Text>
             </TouchableOpacity>
 
-            
-            
+            <View style={styles.actionRow}>
+              <TouchableOpacity style={styles.secondaryButton} onPress={onOpenLabelPreview}>
+                <Text style={styles.secondaryButtonText}>🖨 Etiketten</Text>
+              </TouchableOpacity>
 
               <TouchableOpacity style={styles.secondaryButton} onPress={onOpenScanner}>
                 <Text style={styles.secondaryButtonText}>📷 Scanner</Text>
