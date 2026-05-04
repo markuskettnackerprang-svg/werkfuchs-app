@@ -98,7 +98,8 @@ export default function InventoryScreen({
   startMode = "browse",
   userConfig,
 }) {
-  
+
+  const [realWorkshopId, setRealWorkshopId] = useState(null);
   const [mode, setMode] = useState(startMode === "create" ? "form" : "list");
   const [items, setItems] = useState([]);
   const [searchText, setSearchText] = useState("");
@@ -118,14 +119,44 @@ export default function InventoryScreen({
 
   const userCategories = userConfig?.categories || CATEGORY_SUGGESTIONS;
   const workshopId = userConfig?.workshopId || WORKSHOP_ID;
+  const normalizedWorkshopId = workshopId.trim().toLowerCase();
 
   useEffect(() => {
-    loadItems();
-  }, []);
+    if (realWorkshopId) {
+      loadItems();
+    }
+  }, [realWorkshopId]);
 
   useEffect(() => {
-  if (!scannedCode) return;
-  if (!items || items.length === 0) return;
+  async function fetchWorkshop() {
+    const { data, error } = await supabase
+      .from("workshops")
+      .select("id, legacy_id")
+      .eq("legacy_id", normalizedWorkshopId)
+      .limit(1);
+
+    if (error) {
+      Alert.alert("Workshop Fehler", error.message);
+      console.log("Workshop laden Fehler:", error);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      Alert.alert(
+        "Keine Werkstatt gefunden",
+        `Gesucht wurde: ${normalizedWorkshopId}`
+      );
+      return;
+    }
+    setRealWorkshopId(data[0].id);
+  }
+
+  fetchWorkshop();
+}, [normalizedWorkshopId]);
+
+  useEffect(() => {
+    if (!scannedCode) return;
+    if (!items || items.length === 0) return;
 
   const cleanCode = String(scannedCode).trim();
 
@@ -273,38 +304,38 @@ export default function InventoryScreen({
   }
   
   async function loadItems() {
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const { data, error } = await supabase
-        .from("items")
-        .select("*")
-        .eq("workshop_id", workshopId)
-        .order("created_at", { ascending: false });
+    const { data, error } = await supabase
+      .from("items")
+      .select("*")
+      .eq("workshop_id", realWorkshopId)
+      .order("created_at", { ascending: false });
 
-      if (error) {
-        console.log("Supabase Laden Fehler:", error);
-        Alert.alert("Fehler", error.message || "Inventar konnte nicht geladen werden.");
-        return;
-      }
-
-      const loadedItems = (data || []).map((item) => ({
-        ...item,
-        imageUri: item.image_uri,
-      }));
-
-      setItems(loadedItems);
-
-      if (onItemsLoaded) {
-        onItemsLoaded(loadedItems);
-      }
-    } catch (e) {
-      console.log("Laden fehlgeschlagen:", e);
-      Alert.alert("Fehler", "Inventar konnte nicht geladen werden.");
-    } finally {
-      setLoading(false);
+    if (error) {
+      console.log("Supabase Laden Fehler:", error);
+      Alert.alert("Fehler", error.message || "Inventar konnte nicht geladen werden.");
+      return;
     }
+
+    const loadedItems = (data || []).map((item) => ({
+      ...item,
+      imageUri: item.image_uri,
+    }));
+
+    setItems(loadedItems);
+
+    if (onItemsLoaded) {
+      onItemsLoaded(loadedItems);
+    }
+  } catch (e) {
+    console.log("Laden fehlgeschlagen:", e);
+    Alert.alert("Fehler", "Inventar konnte nicht geladen werden.");
+  } finally {
+    setLoading(false);
   }
+}
 
   function resetForm() {
     setEditingId(null);
@@ -405,7 +436,7 @@ async function handleImportBackupInventory() {
   const itemsToImport = inventoryData.map((item) => ({
     ...item,
     id: `backup-${item.id}`,
-    workshop_id: workshopId,
+    workshop_id: realWorkshopId,
     image_uri: item.image_uri || "",
     updated_at: new Date().toISOString(),
   }));
@@ -433,6 +464,11 @@ async function handleImportBackupInventory() {
     const finalName = name.trim();
     const finalCategory = category.trim();
 
+    if (!realWorkshopId) {
+      Alert.alert("Bitte warten", "Werkstatt wird noch geladen...");
+      return;
+    }
+
     if (!finalName) {
       Alert.alert("Fehlt noch", "Bitte Name eingeben.");
       return;
@@ -457,7 +493,7 @@ async function handleImportBackupInventory() {
   }
     const itemToSave = {
       id: editingId || Date.now().toString(),
-      workshop_id: workshopId,
+      workshop_id: realWorkshopId,
       code: code.trim() || getNextCode(items, finalCategory),
       name: finalName,
       shortLabel: shortLabel.trim(),
