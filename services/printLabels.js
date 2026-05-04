@@ -1,4 +1,5 @@
 import * as Print from "expo-print";
+import * as Sharing from "expo-sharing";
 
 export async function printLabels(html) {
   if (!html) {
@@ -18,6 +19,13 @@ export async function exportLabelsPdf(html) {
   const result = await Print.printToFileAsync({
     html,
   });
+
+  if (await Sharing.isAvailableAsync()) {
+    await Sharing.shareAsync(result.uri, {
+      mimeType: "application/pdf",
+      dialogTitle: "Etiketten-PDF speichern oder teilen",
+    });
+  }
 
   return result.uri;
 }

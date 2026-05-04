@@ -19,6 +19,7 @@ import { supabase } from "../services/supabaseClient";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system/legacy";
 import { decode } from "base64-arraybuffer";
+import * as Sharing from "expo-sharing";
 
 const WORKSHOP_ID = "werkfuchs-privat";
 
@@ -799,10 +800,8 @@ const locationSuggestions = allLocations
               <Text style={styles.primaryButtonText}>＋ Neuer Fund</Text>
             </TouchableOpacity>
 
-            <View style={styles.actionRow}>
-              <TouchableOpacity style={styles.secondaryButton} onPress={onOpenLabelPreview}>
-                <Text style={styles.secondaryButtonText}>🖨 Etiketten</Text>
-              </TouchableOpacity>
+            
+            
 
               <TouchableOpacity style={styles.secondaryButton} onPress={onOpenScanner}>
                 <Text style={styles.secondaryButtonText}>📷 Scanner</Text>
