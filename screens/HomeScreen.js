@@ -9,7 +9,7 @@ import {
 
 import { theme } from "../utils/theme";
 
-export default function HomeScreen({ onNavigate }) {
+export default function HomeScreen({ onNavigate, onOpenWorkshopSettings }) {
   return (
     <View style={styles.container}>
       <Image
@@ -18,7 +18,14 @@ export default function HomeScreen({ onNavigate }) {
         resizeMode="contain"
       />
 
-      <Text style={styles.title}>WerkFuchs Pro</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Werkfuchs</Text>
+
+        <TouchableOpacity onPress={() => onOpenWorkshopSettings?.()}>
+          <Text style={styles.settingsIcon}>⚙️</Text>
+        </TouchableOpacity>
+      </View>
+
       <Text style={styles.versionTag}>Testversion</Text>
       <Text style={styles.subtitle}>
         Werkstatt, Boxen und Material clever verwalten. 🦊
@@ -228,4 +235,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "800",
   },
+
+  header: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+
+  settingsIcon: {
+    fontSize: 24,
+  },
+
 });

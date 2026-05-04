@@ -94,6 +94,7 @@ export default function InventoryScreen({
   onGoHome,
   onOpenLabelPreview,
   onOpenScanner,
+  onOpenWorkshopSettings,
   onItemsLoaded,
   startMode = "browse",
   userConfig,
@@ -1278,5 +1279,18 @@ suggestionText: {
 
 locationInput: {
   marginBottom: 0,
+},
+
+settingsButton: {
+  marginTop: 10,
+  padding: 12,
+  borderRadius: 8,
+  backgroundColor: "#222",
+  alignItems: "center",
+},
+
+settingsButtonText: {
+  color: "#fff",
+  fontWeight: "600",
 },
 });

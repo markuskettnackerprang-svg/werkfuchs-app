@@ -5,12 +5,11 @@ import { supabase } from "./services/supabaseClient";
 import HomeScreen from "./screens/HomeScreen";
 import AuthScreen from "./screens/AuthScreen";
 import InventoryScreen from "./screens/InventoryScreen";
+import WorkshopSettingsScreen from "./screens/WorkshopSettingsScreen";
 import LabelPreviewScreen from "./screens/LabelPreviewScreen";
 import ScannerScreen from "./screens/ScannerScreen";
 import OnboardingScreen from "./screens/OnboardingScreen";
 import FeedbackScreen from "./screens/FeedbackScreen";
-
-import inventoryData from "./data/inventoryData";
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState("home");
@@ -23,39 +22,39 @@ export default function App() {
   const [labelItems, setLabelItems] = useState([]);
 
   useEffect(() => {
-  async function loadConfig() {
-    try {
-      const saved = await AsyncStorage.getItem("userConfig");
+    async function loadConfig() {
+      try {
+        const saved = await AsyncStorage.getItem("userConfig");
 
-      if (saved) {
-        setUserConfig(JSON.parse(saved));
-        setShowOnboarding(false);
-      } else {
+        if (saved) {
+          setUserConfig(JSON.parse(saved));
+          setShowOnboarding(false);
+        } else {
+          setShowOnboarding(true);
+        }
+
+        const { data } = await supabase.auth.getSession();
+        setSession(data.session);
+      } catch (error) {
+        console.log("App Start Fehler:", error);
         setShowOnboarding(true);
+      } finally {
+        setIsReady(true);
       }
-
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session);
-    } catch (error) {
-      console.log("App Start Fehler:", error);
-      setShowOnboarding(true);
-    } finally {
-      setIsReady(true);
     }
-  }
 
-  loadConfig();
+    loadConfig();
 
-  const { data: authListener } = supabase.auth.onAuthStateChange(
-    (_event, session) => {
-      setSession(session);
-    }
-  );
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+      }
+    );
 
-  return () => {
-    authListener.subscription.unsubscribe();
-  };
-}, []);
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
 
   async function handleOnboardingComplete(config) {
     try {
@@ -133,12 +132,25 @@ export default function App() {
       />
     );
   }
+
   if (currentScreen === "feedback") {
-  return (
-    <FeedbackScreen
-      onBack={() => setCurrentScreen("home")}
-    />
-  );
-}
-  return <HomeScreen onNavigate={(screen) => setCurrentScreen(screen)} />;
+    return <FeedbackScreen onBack={() => setCurrentScreen("home")} />;
+  }
+
+  if (currentScreen === "workshopSettings") {
+    return (
+      <WorkshopSettingsScreen
+        onBack={() => setCurrentScreen("home")}
+        userConfig={userConfig}
+        session={session}
+      />
+    );
+  }
+
+return (
+  <HomeScreen
+    onNavigate={(screen) => setCurrentScreen(screen)}
+    onOpenWorkshopSettings={() => setCurrentScreen("workshopSettings")}
+  />
+);
 }
