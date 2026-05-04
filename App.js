@@ -138,14 +138,14 @@ export default function App() {
   }
 
   if (currentScreen === "workshopSettings") {
-    return (
-      <WorkshopSettingsScreen
-        onBack={() => setCurrentScreen("home")}
-        userConfig={userConfig}
-        session={session}
-      />
-    );
-  }
+  return (
+    <WorkshopSettingsScreen
+      onBack={() => setCurrentScreen("home")}
+      userConfig={userConfig}
+      session={session}
+    />
+  );
+}
 
 return (
   <HomeScreen

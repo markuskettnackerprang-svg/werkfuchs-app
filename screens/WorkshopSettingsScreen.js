@@ -53,8 +53,14 @@ export default function WorkshopSettingsScreen({ userConfig, onBack }) {
   return (
     <View style={styles.container}>
 
-      <TouchableOpacity onPress={onBack}>
-        <Text>← Zurück</Text>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => {
+          console.log("Zurück gedrückt");
+          onBack?.();
+        }}
+      >
+        <Text style={styles.backButtonText}>← Zurück</Text>
       </TouchableOpacity>
 
       <Text style={styles.title}>Werkstatt-Einstellungen</Text>
@@ -119,4 +125,18 @@ const styles = StyleSheet.create({
     gap: 12,
     marginVertical: 12,
   },
+
+  backButton: {
+  alignSelf: "flex-start",
+  paddingVertical: 10,
+  paddingHorizontal: 4,
+  marginBottom: 8,
+  zIndex: 10,
+},
+
+backButtonText: {
+  fontSize: 16,
+  fontWeight: "700",
+  color: "#1B2A3A",
+},
 });
