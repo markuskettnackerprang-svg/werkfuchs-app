@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase } from "./services/supabaseClient";
 
 import HomeScreen from "./screens/HomeScreen";
+import AuthScreen from "./screens/AuthScreen";
 import InventoryScreen from "./screens/InventoryScreen";
 import LabelPreviewScreen from "./screens/LabelPreviewScreen";
 import ScannerScreen from "./screens/ScannerScreen";
@@ -12,6 +14,7 @@ import inventoryData from "./data/inventoryData";
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState("home");
+  const [session, setSession] = useState(null);
   const [scannedCode, setScannedCode] = useState("");
 
   const [isReady, setIsReady] = useState(false);
@@ -20,27 +23,39 @@ export default function App() {
   const [labelItems, setLabelItems] = useState([]);
 
   useEffect(() => {
-    async function loadConfig() {
-      
-      try {
-        const saved = await AsyncStorage.getItem("userConfig");
+  async function loadConfig() {
+    try {
+      const saved = await AsyncStorage.getItem("userConfig");
 
-        if (saved) {
-          setUserConfig(JSON.parse(saved));
-          setShowOnboarding(false);
-        } else {
-          setShowOnboarding(true);
-        }
-      } catch (error) {
-        console.log("Onboarding laden fehlgeschlagen:", error);
+      if (saved) {
+        setUserConfig(JSON.parse(saved));
+        setShowOnboarding(false);
+      } else {
         setShowOnboarding(true);
-      } finally {
-        setIsReady(true);
       }
-    }
 
-    loadConfig();
-  }, []);
+      const { data } = await supabase.auth.getSession();
+      setSession(data.session);
+    } catch (error) {
+      console.log("App Start Fehler:", error);
+      setShowOnboarding(true);
+    } finally {
+      setIsReady(true);
+    }
+  }
+
+  loadConfig();
+
+  const { data: authListener } = supabase.auth.onAuthStateChange(
+    (_event, session) => {
+      setSession(session);
+    }
+  );
+
+  return () => {
+    authListener.subscription.unsubscribe();
+  };
+}, []);
 
   async function handleOnboardingComplete(config) {
     try {
@@ -55,6 +70,10 @@ export default function App() {
 
   if (!isReady) {
     return null;
+  }
+
+  if (!session) {
+    return <AuthScreen onLogin={setSession} />;
   }
 
   if (showOnboarding) {
@@ -96,6 +115,7 @@ export default function App() {
         onItemsLoaded={setLabelItems}
         startMode="browse"
         userConfig={userConfig}
+        session={session}
       />
     );
   }
@@ -109,6 +129,7 @@ export default function App() {
         onItemsLoaded={setLabelItems}
         startMode="create"
         userConfig={userConfig}
+        session={session}
       />
     );
   }

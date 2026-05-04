@@ -97,7 +97,9 @@ export default function InventoryScreen({
   onItemsLoaded,
   startMode = "browse",
   userConfig,
+  session,
 }) {
+  const userId = session?.user?.id;
 
   const [realWorkshopId, setRealWorkshopId] = useState(null);
   const [mode, setMode] = useState(startMode === "create" ? "form" : "list");
@@ -128,31 +130,31 @@ export default function InventoryScreen({
   }, [realWorkshopId]);
 
   useEffect(() => {
-  async function fetchWorkshop() {
-    const { data, error } = await supabase
-      .from("workshops")
-      .select("id, legacy_id")
-      .eq("legacy_id", normalizedWorkshopId)
-      .limit(1);
+    if (!session?.user?.id) return;
 
-    if (error) {
-      Alert.alert("Workshop Fehler", error.message);
-      console.log("Workshop laden Fehler:", error);
-      return;
+    async function fetchWorkshop() {
+      const { data, error } = await supabase
+        .from("workshop_members")
+        .select("workshop_id")
+        .eq("user_id", session.user.id)
+        .limit(1);
+
+      if (error) {
+        console.log("Workshop laden Fehler:", error);
+        Alert.alert("Fehler", error.message);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        Alert.alert("Fehler", "Kein Workshop für diesen User gefunden.");
+        return;
+      }
+
+      setRealWorkshopId(data[0].workshop_id);
     }
 
-    if (!data || data.length === 0) {
-      Alert.alert(
-        "Keine Werkstatt gefunden",
-        `Gesucht wurde: ${normalizedWorkshopId}`
-      );
-      return;
-    }
-    setRealWorkshopId(data[0].id);
-  }
-
-  fetchWorkshop();
-}, [normalizedWorkshopId]);
+    fetchWorkshop();
+  }, [session]);
 
   useEffect(() => {
     if (!scannedCode) return;
@@ -534,7 +536,7 @@ async function handleImportBackupInventory() {
     Alert.alert("Gespeichert", "Der Artikel wurde in der Cloud gespeichert.");
   }
 
-  function handleDelete(id) {
+ function handleDelete(id) {
   Alert.alert(
     "Wirklich löschen?",
     "Dieser Artikel wird dauerhaft gelöscht.",
@@ -547,11 +549,16 @@ async function handleImportBackupInventory() {
         text: "Löschen",
         style: "destructive",
         onPress: async () => {
+          if (!realWorkshopId) {
+            Alert.alert("Bitte warten", "Werkstatt wird noch geladen...");
+            return;
+          }
+
           const { error } = await supabase
             .from("items")
             .delete()
             .eq("id", id)
-            .eq("workshop_id", workshopId);
+            .eq("workshop_id", realWorkshopId);
 
           if (error) {
             console.log("Supabase Löschen Fehler:", error);
@@ -644,6 +651,10 @@ const locationSuggestions = allLocations
             <Text style={styles.title}>
               {editingId ? "Fund bearbeiten" : "Neuer Fund"}
             </Text>
+
+            {!realWorkshopId && (
+              <Text style={styles.subtitle}>Werkstatt wird geladen...</Text>
+            )}
 
           <View style={styles.formCard}>
             <Text style={styles.label}>Code</Text>
