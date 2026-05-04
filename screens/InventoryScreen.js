@@ -21,7 +21,7 @@ import * as FileSystem from "expo-file-system/legacy";
 import { decode } from "base64-arraybuffer";
 import * as Sharing from "expo-sharing";
 
-const WORKSHOP_ID = "werkfuchs-privat";
+const WORKSHOP_ID = "8d9e61c5-caaa-4214-955d-ef9562ebd53c";
 
 const CATEGORY_PREFIXES = {
   Dübel: "D",
@@ -121,14 +121,13 @@ export default function InventoryScreen({
   const [isLocationFocused, setIsLocationFocused] = useState(false);
 
   const userCategories = userConfig?.categories || CATEGORY_SUGGESTIONS;
-  const workshopId = userConfig?.workshopId || WORKSHOP_ID;
-  const normalizedWorkshopId = workshopId.trim().toLowerCase();
+  const workshopId = realWorkshopId || WORKSHOP_ID;
 
   useEffect(() => {
-    if (realWorkshopId) {
+    if (workshopId) {
       loadItems();
     }
-  }, [realWorkshopId]);
+  }, [workshopId]);
 
   useEffect(() => {
     if (!session?.user?.id) return;
@@ -147,10 +146,10 @@ export default function InventoryScreen({
       }
 
       if (!data || data.length === 0) {
-        Alert.alert("Fehler", "Kein Workshop für diesen User gefunden.");
+        console.log("Kein Workshop-Member gefunden, nutze Fallback:", WORKSHOP_ID);
+        setRealWorkshopId(WORKSHOP_ID);
         return;
       }
-
       setRealWorkshopId(data[0].workshop_id);
     }
 
@@ -311,10 +310,10 @@ export default function InventoryScreen({
     setLoading(true);
 
     const { data, error } = await supabase
-      .from("items")
-      .select("*")
-      .eq("workshop_id", realWorkshopId)
-      .order("created_at", { ascending: false });
+    .from("items")
+    .select("*")
+    .eq("workshop_id", workshopId)
+    .order("created_at", { ascending: false });
 
     if (error) {
       console.log("Supabase Laden Fehler:", error);
@@ -559,7 +558,7 @@ async function handleImportBackupInventory() {
             .from("items")
             .delete()
             .eq("id", id)
-            .eq("workshop_id", realWorkshopId);
+            .eq("workshop_id", workshopId)
 
           if (error) {
             console.log("Supabase Löschen Fehler:", error);
