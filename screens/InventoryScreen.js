@@ -113,6 +113,7 @@ export default function InventoryScreen({
   const [imageUri, setImageUri] = useState("");
   const [aiSuggestion, setAiSuggestion] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isLocationFocused, setIsLocationFocused] = useState(false);
 
   const userCategories = userConfig?.categories || CATEGORY_SUGGESTIONS;
   const workshopId = userConfig?.workshopId || WORKSHOP_ID;
@@ -554,18 +555,35 @@ async function handleImportBackupInventory() {
 if (mode === "form") {
   const previewCode = code.trim() || getNextCode(items, category);
 
-  const locationSuggestions = Array.from(
-    new Set(
-      items
-        .map((item) => item.location)
-        .filter((loc) => loc && loc.trim() !== "")
-    )
+  const locationQuery = location.toLowerCase().trim();
+
+const allLocations = Array.from(
+  new Set(
+    items
+      .map((item) => item.location)
+      .filter((loc) => loc && loc.trim() !== "")
   )
-    .filter((loc) =>
-      loc.toLowerCase().includes(location.toLowerCase())
-    )
-    .filter((loc) => loc !== location)
-    .slice(0, 5);
+);
+
+const locationSuggestions = allLocations
+  .filter((loc) => {
+    const normalizedLoc = loc.toLowerCase();
+    return (
+      locationQuery.length > 0 &&
+      normalizedLoc.includes(locationQuery) &&
+      normalizedLoc !== locationQuery
+    );
+  })
+  .sort((a, b) => {
+    const aStarts = a.toLowerCase().startsWith(locationQuery);
+    const bStarts = b.toLowerCase().startsWith(locationQuery);
+
+    if (aStarts && !bStarts) return -1;
+    if (!aStarts && bStarts) return 1;
+
+    return a.localeCompare(b);
+  })
+  .slice(0, 5);
 
   return (
     <KeyboardAvoidingView
@@ -730,12 +748,15 @@ if (mode === "form") {
 
             <Text style={styles.label}>Lagerort</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, styles.locationInput]}
               placeholder="z. B. Box 1 oder Regal A"
               value={location}
               onChangeText={setLocation}
+              onFocus={() => setIsLocationFocused(true)}
+              onBlur={() => setIsLocationFocused(false)}
             />
-            {location.length > 0 && locationSuggestions.length > 0 && (
+
+            {isLocationFocused && location.length > 0 && locationSuggestions.length > 0 && (
               <View style={styles.suggestionBox}>
                 {locationSuggestions.map((suggestion) => (
                   <TouchableOpacity
@@ -1205,5 +1226,9 @@ suggestionItem: {
 suggestionText: {
   fontSize: 15,
   color: "#333",
+},
+
+locationInput: {
+  marginBottom: 0,
 },
 });
