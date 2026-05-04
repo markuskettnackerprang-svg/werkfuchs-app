@@ -74,7 +74,7 @@ export default function AuthScreen({ onLogin }) {
       />
 
       <TouchableOpacity style={styles.primaryButton} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Einloggen</Text>
+        <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.secondaryButton} onPress={handleSignup}>
@@ -98,14 +98,14 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   input: {
-    backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#D1D5DB",
-    borderRadius: 12,
-    padding: 14,
-    fontSize: 16,
-    marginBottom: 12,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    padding: 12,
+    color: "#000", // 👈 DAS ist der Fix
+    backgroundColor: "#fff",
   },
+
   primaryButton: {
     backgroundColor: "#FF6B00",
     padding: 14,
