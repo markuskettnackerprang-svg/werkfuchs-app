@@ -1,6 +1,11 @@
 import { supabase } from "./supabaseClient";
 
 export async function acceptWorkshopInvite(token) {
+
+  const cleanToken = String(token || "").trim();
+
+  console.log("ACCEPT TOKEN RAW:", token);
+  console.log("ACCEPT TOKEN CLEAN:", cleanToken);
   const {
     data: { user },
     error: userError,
@@ -14,11 +19,19 @@ export async function acceptWorkshopInvite(token) {
   const { data: invite, error: inviteError } = await supabase
     .from("workshop_invites")
     .select("*")
-    .eq("token", token)
+    .eq("token", cleanToken)
     .single();
 
   if (inviteError || !invite) {
-    throw new Error("Einladung ungültig");
+    console.log("INVITE LOOKUP ERROR:", inviteError);
+    console.log("INVITE LOOKUP TOKEN:", cleanToken);
+
+    throw new Error(
+      "Einladung ungültig: " +
+        (inviteError?.message || "Kein Datensatz gefunden") +
+        " | Token: " +
+        cleanToken
+    );
   }
 
   if (invite.accepted_at) {
