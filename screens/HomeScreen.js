@@ -1,15 +1,41 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   Image,
   TouchableOpacity,
+  TextInput,
+  Alert,
 } from "react-native";
 
 import { theme } from "../utils/theme";
+import { acceptWorkshopInvite } from "../services/inviteAcceptance";
 
 export default function HomeScreen({ onNavigate, onOpenWorkshopSettings }) {
+  const [inviteCode, setInviteCode] = useState("");
+  const [acceptingInvite, setAcceptingInvite] = useState(false);
+
+  async function handleAcceptInvite() {
+    const token = inviteCode.trim();
+
+    if (!token) {
+      Alert.alert("Fehler", "Bitte Einladungscode eingeben.");
+      return;
+    }
+
+    try {
+      setAcceptingInvite(true);
+      await acceptWorkshopInvite(token);
+      setInviteCode("");
+      Alert.alert("Erfolg", "Du bist dem Workshop beigetreten 🎉");
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Fehler", error.message || "Einladung konnte nicht angenommen werden.");
+    } finally {
+      setAcceptingInvite(false);
+    }
+  }
   return (
     <View style={styles.container}>
       <Image
@@ -68,6 +94,27 @@ export default function HomeScreen({ onNavigate, onOpenWorkshopSettings }) {
         <Text style={styles.arrow}>›</Text>
       </TouchableOpacity>
 
+      <View style={styles.inviteBox}>
+        <Text style={styles.inviteTitle}>Einladung annehmen</Text>
+
+        <TextInput
+          style={styles.inviteInput}
+          placeholder="Einladungscode einfügen"
+          value={inviteCode}
+          onChangeText={setInviteCode}
+          autoCapitalize="none"
+        />
+
+        <TouchableOpacity
+          style={styles.inviteButton}
+          onPress={handleAcceptInvite}
+          disabled={acceptingInvite}
+        >
+          <Text style={styles.inviteButtonText}>
+            {acceptingInvite ? "Wird angenommen..." : "Einladung annehmen"}
+          </Text>
+        </TouchableOpacity>
+      </View>
       <TouchableOpacity
         style={styles.feedbackButton}
         onPress={() => onNavigate("feedback")}
@@ -247,5 +294,41 @@ const styles = StyleSheet.create({
   settingsIcon: {
     fontSize: 24,
   },
+  inviteBox: {
+  width: "100%",
+  backgroundColor: "#FFFFFF",
+  borderRadius: 20,
+  padding: 16,
+  marginTop: 16,
+  borderWidth: 1,
+  borderColor: "#D0D5DD",
+},
 
+inviteTitle: {
+  fontSize: 16,
+  fontWeight: "800",
+  color: "#1F2A37",
+  marginBottom: 10,
+},
+
+inviteInput: {
+  borderWidth: 1,
+  borderColor: "#D1D5DB",
+  borderRadius: 12,
+  padding: 12,
+  marginBottom: 10,
+  color: "#1F2A37",
+},
+
+inviteButton: {
+  backgroundColor: "#1B2A3A",
+  paddingVertical: 12,
+  borderRadius: 12,
+  alignItems: "center",
+},
+
+inviteButtonText: {
+  color: "#FFFFFF",
+  fontWeight: "800",
+},
 });
