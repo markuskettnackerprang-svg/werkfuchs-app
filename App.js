@@ -45,20 +45,8 @@ export default function App() {
     }
   }
 
-  Alert.alert("Einladung erkannt", `Token:\n${token}`);
-}
   useEffect(() => {
     async function loadConfig() {
-      Linking.getInitialURL().then((url) => {
-        if (url) {
-          handleInviteLink(url);
-        }
-      });
-
-      const linkingSubscription = Linking.addEventListener("url", ({ url }) => {
-        handleInviteLink(url);
-      });
-
       try {
         const saved = await AsyncStorage.getItem("userConfig");
 
@@ -80,6 +68,16 @@ export default function App() {
     }
 
     loadConfig();
+
+    Linking.getInitialURL().then((url) => {
+      if (url) {
+        handleInviteLink(url);
+      }
+    });
+
+    const linkingSubscription = Linking.addEventListener("url", ({ url }) => {
+      handleInviteLink(url);
+    });
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
