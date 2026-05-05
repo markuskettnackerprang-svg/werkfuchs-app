@@ -40,8 +40,11 @@ export async function acceptWorkshopInvite(token) {
 
   if (insertError) {
     console.log("FEHLER BEI workshop_members INSERT:", insertError);
-    throw insertError;
-  }
+    throw new Error(
+        "workshop_members INSERT: " +
+        (insertError.message || JSON.stringify(insertError))
+    );
+    }
 
   // Einladung aktualisieren
   const { error: updateError } = await supabase
@@ -52,10 +55,13 @@ export async function acceptWorkshopInvite(token) {
       status: "accepted",
     })
     .eq("id", invite.id);
-    
+
    if (updateError) {
     console.log("FEHLER BEI workshop_invites UPDATE:", updateError);
-    throw updateError;
+    throw new Error(
+        "workshop_invites UPDATE: " +
+        (updateError.message || JSON.stringify(updateError))
+    );
     }
   return invite;
 }
