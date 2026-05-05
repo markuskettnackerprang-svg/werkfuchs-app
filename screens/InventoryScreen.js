@@ -21,7 +21,7 @@ import * as FileSystem from "expo-file-system/legacy";
 import { decode } from "base64-arraybuffer";
 import * as Sharing from "expo-sharing";
 
-const WORKSHOP_ID = "8d9e61c5-caaa-4214-955d-ef9562ebd53c";
+const WORKSHOP_ID = "ec503812-2e95-4cf5-846e-24e037793ad9";
 
 const CATEGORY_PREFIXES = {
   Dübel: "D",
@@ -124,12 +124,10 @@ export default function InventoryScreen({
   const workshopId = realWorkshopId || WORKSHOP_ID;
 
   useEffect(() => {
-    if (workshopId) {
-      loadItems();
-    }
+    loadItems();
   }, [workshopId]);
 
-  useEffect(() => {
+    useEffect(() => {
     if (!session?.user?.id) return;
 
     async function fetchWorkshop() {
@@ -306,8 +304,18 @@ export default function InventoryScreen({
   }
   
   async function loadItems() {
+  console.log("🔥 loadItems called with workshopId:", workshopId);
+
+  if (!workshopId) {
+    console.log("❌ Kein workshopId vorhanden");
+    return;
+  }
   try {
     setLoading(true);
+
+    console.log("LOAD ITEMS workshopId:", workshopId);
+    console.log("LOAD ITEMS realWorkshopId:", realWorkshopId);
+    console.log("LOAD ITEMS userId:", userId);
 
     const { data, error } = await supabase
     .from("items")
@@ -315,6 +323,9 @@ export default function InventoryScreen({
     .eq("workshop_id", workshopId)
     .order("created_at", { ascending: false });
 
+    console.log("LOAD ITEMS data:", data);
+    console.log("LOAD ITEMS error:", error);
+    
     if (error) {
       console.log("Supabase Laden Fehler:", error);
       Alert.alert("Fehler", error.message || "Inventar konnte nicht geladen werden.");
@@ -927,10 +938,13 @@ const locationSuggestions = allLocations
             </Text>
           </>
         }
+        
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Text style={styles.codeText}>{item.code}</Text>
-            <Text style={styles.nameText}>{item.shortLabel || item.name}</Text>
+            <Text style={styles.codeText}>{String(item.code || "")}</Text>
+            <Text style={styles.nameText}>
+              {String(item.shortLabel || item.name || "")}
+            </Text>
           
             <Text>
               Bild: {item.image_uri ? "vorhanden" : "noch keines"}
