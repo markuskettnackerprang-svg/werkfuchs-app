@@ -39,18 +39,23 @@ export async function acceptWorkshopInvite(token) {
     });
 
   if (insertError) {
+    console.log("FEHLER BEI workshop_members INSERT:", insertError);
     throw insertError;
   }
 
   // Einladung aktualisieren
-  await supabase
-    .from("workshop_invites")
-    .update({
+  const { error: updateError } = await supabase
+  .from("workshop_invites")
+  .update({
       accepted_at: new Date().toISOString(),
       accepted_by: user.id,
       status: "accepted",
     })
     .eq("id", invite.id);
-
+    
+   if (updateError) {
+    console.log("FEHLER BEI workshop_invites UPDATE:", updateError);
+    throw updateError;
+    }
   return invite;
 }
