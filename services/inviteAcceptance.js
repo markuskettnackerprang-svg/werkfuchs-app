@@ -1,11 +1,13 @@
 import { supabase } from "./supabaseClient";
 
 export async function acceptWorkshopInvite(token) {
-
-  const cleanToken = String(token || "").trim();
+  const cleanToken = String(token || "")
+    .replace(/\s/g, "")
+    .trim();
 
   console.log("ACCEPT TOKEN RAW:", token);
   console.log("ACCEPT TOKEN CLEAN:", cleanToken);
+
   const {
     data: { user },
     error: userError,
@@ -15,7 +17,6 @@ export async function acceptWorkshopInvite(token) {
     throw new Error("Nicht eingeloggt");
   }
 
-  // Einladung holen
   const { data: invite, error: inviteError } = await supabase
     .from("workshop_invites")
     .select("*")
@@ -23,14 +24,9 @@ export async function acceptWorkshopInvite(token) {
     .single();
 
   if (inviteError || !invite) {
-    console.log("INVITE LOOKUP ERROR:", inviteError);
-    console.log("INVITE LOOKUP TOKEN:", cleanToken);
-
     throw new Error(
       "Einladung ungültig: " +
-        (inviteError?.message || "Kein Datensatz gefunden") +
-        " | Token: " +
-        cleanToken
+        (inviteError?.message || "Kein Datensatz gefunden")
     );
   }
 
@@ -42,39 +38,63 @@ export async function acceptWorkshopInvite(token) {
     throw new Error("Einladung abgelaufen");
   }
 
-  // User zum Workshop hinzufügen
-  const { error: insertError } = await supabase
+  const { data: existing } = await supabase
     .from("workshop_members")
-    .insert({
-      workshop_id: invite.workshop_id,
-      user_id: user.id,
-      role: invite.role,
-    });
+    .select("role")
+    .eq("workshop_id", invite.workshop_id)
+    .eq("user_id", user.id)
+    .maybeSingle();
 
-  if (insertError) {
-    console.log("FEHLER BEI workshop_members INSERT:", insertError);
-    throw new Error(
-        "workshop_members INSERT: " +
-        (insertError.message || JSON.stringify(insertError))
-    );
+  const rolePriority = {
+    owner: 2,
+    member: 1,
+  };
+
+  let finalRole = invite.role;
+
+  if (existing) {
+    const currentRole = existing.role;
+
+    if (rolePriority[currentRole] >= rolePriority[invite.role]) {
+      finalRole = currentRole;
     }
+  }
 
-  // Einladung aktualisieren
+  const { error: memberError } = await supabase
+    .from("workshop_members")
+    .upsert(
+      {
+        workshop_id: invite.workshop_id,
+        user_id: user.id,
+        role: finalRole,
+      },
+      {
+        onConflict: "workshop_id,user_id",
+      }
+    );
+
+  if (memberError) {
+    throw new Error(
+      "workshop_members UPSERT: " +
+        (memberError.message || JSON.stringify(memberError))
+    );
+  }
+
   const { error: updateError } = await supabase
-  .from("workshop_invites")
-  .update({
+    .from("workshop_invites")
+    .update({
       accepted_at: new Date().toISOString(),
       accepted_by: user.id,
       status: "accepted",
     })
     .eq("id", invite.id);
 
-   if (updateError) {
-    console.log("FEHLER BEI workshop_invites UPDATE:", updateError);
+  if (updateError) {
     throw new Error(
-        "workshop_invites UPDATE: " +
+      "workshop_invites UPDATE: " +
         (updateError.message || JSON.stringify(updateError))
     );
-    }
+  }
+
   return invite;
 }
