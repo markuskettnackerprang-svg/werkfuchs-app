@@ -19,7 +19,7 @@ export default function HomeScreen({ onNavigate, onOpenWorkshopSettings }) {
       />
 
       <View style={styles.header}>
-        <Text style={styles.title}>Werkfuchs</Text>
+        <Text style={styles.title}>Werkfuchs OTA Test</Text>
 
         <TouchableOpacity onPress={() => onOpenWorkshopSettings?.()}>
           <Text style={styles.settingsIcon}>⚙️</Text>
