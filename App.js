@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
-import * as Linking from "expo-linking";
-import { Alert } from "react-native";
+import { Alert, Linking } from "react-native";
 import { acceptWorkshopInvite } from "./services/inviteAcceptance";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "./services/supabaseClient";
@@ -27,8 +26,8 @@ export default function App() {
   async function handleInviteLink(url) {
     console.log("Invite-Link geöffnet:", url);
 
-    const parsed = Linking.parse(url);
-    const token = parsed?.queryParams?.token;
+    const parsed = new URL(url);
+    const token = parsed.searchParams.get("token");
 
     if (!token) {
       return;
