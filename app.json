@@ -2,6 +2,7 @@
   "expo": {
     "name": "WerkFuchs",
     "slug": "werkfuchs-app",
+    "scheme": "werkfuchs",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
