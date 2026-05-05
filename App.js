@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from "react";
+import * as Linking from "expo-linking";
+import { Alert } from "react-native";
+import { acceptWorkshopInvite } from "./services/inviteAcceptance";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "./services/supabaseClient";
 
@@ -21,8 +24,41 @@ export default function App() {
   const [userConfig, setUserConfig] = useState(null);
   const [labelItems, setLabelItems] = useState([]);
 
+  async function handleInviteLink(url) {
+    console.log("Invite-Link geöffnet:", url);
+
+    const parsed = Linking.parse(url);
+    const token = parsed?.queryParams?.token;
+
+    if (!token) {
+      return;
+    }
+
+    try {
+      await acceptWorkshopInvite(token);
+
+      Alert.alert("Erfolg", "Du bist dem Workshop beigetreten 🎉");
+
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Fehler", error.message);
+    }
+  }
+
+  Alert.alert("Einladung erkannt", `Token:\n${token}`);
+}
   useEffect(() => {
     async function loadConfig() {
+      Linking.getInitialURL().then((url) => {
+        if (url) {
+          handleInviteLink(url);
+        }
+      });
+
+      const linkingSubscription = Linking.addEventListener("url", ({ url }) => {
+        handleInviteLink(url);
+      });
+
       try {
         const saved = await AsyncStorage.getItem("userConfig");
 
@@ -53,6 +89,7 @@ export default function App() {
 
     return () => {
       authListener.subscription.unsubscribe();
+      linkingSubscription.remove();
     };
   }, []);
 
