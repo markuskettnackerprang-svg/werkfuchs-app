@@ -12,7 +12,13 @@ import {
 import { createWorkshopInvite } from "../services/invites";
 
 export default function WorkshopSettingsScreen({ userConfig, onBack }) {
-  const workshopId = userConfig?.workshopId;
+  const workshopId =
+    userConfig?.workshopId ||
+    userConfig?.workshop_id ||
+    "ec503812-2e95-4cf5-846e-24e037793ad9";
+
+  console.log("WORKSHOP SETTINGS userConfig:", userConfig);
+  console.log("WORKSHOP SETTINGS workshopId:", workshopId);
 
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("member");
@@ -23,10 +29,18 @@ export default function WorkshopSettingsScreen({ userConfig, onBack }) {
       Alert.alert("Fehler", "Bitte E-Mail eingeben.");
       return;
     }
-
+    if (!workshopId) {
+      Alert.alert("Fehler", "Keine Workshop-ID gefunden. Bitte Onboarding/Workshop neu laden.");
+      return;
+    }
     try {
       setLoading(true);
 
+      console.log("INVITE DEBUG:", {
+        workshopId,
+        email,
+        role,
+      });
       const invite = await createWorkshopInvite({
         workshopId,
         email,
